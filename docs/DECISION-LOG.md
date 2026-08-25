@@ -1,0 +1,82 @@
+# Decision log
+
+## 2026-08-25 — Correct the product identity before branching
+
+**Decision:** Discard the initial heat-equity framing. Celsius Scout is a thermal player-scouting product. The Average Is Lying and Festival Tetris are demonstrations powered by the same engine.
+
+**Why:** The initial reconstruction did not contain the actual proposal and introduced an unrelated scoring model. Keeping it would damage thematic coherence.
+
+## 2026-08-25 — One core before secondary breadth
+
+**Decision:** Complete and verify the Celsius Scout loop before expanding either secondary experience.
+
+**Why:** Five days remain. A memorable, reliable core scores better and teaches us more than three fragile surfaces.
+
+## 2026-08-25 — Deterministic calculations, optional LLM reasoning
+
+**Decision:** Pure functions calculate numbers and return structured evidence. An LLM may choose tools, analyze their outputs, and write explanations constrained to that evidence.
+
+**Why:** This preserves reproducibility without reducing the agent to decorative chat.
+
+## 2026-08-25 — Demo-first data architecture
+
+**Decision:** Every branch opens with a deterministic synthetic fixture, while a shared server-side adapter supports live FortyGuard calls.
+
+**Why:** It keeps the demo reliable without credentials or credit use and preserves a credible path to real data.
+
+## 2026-08-25 — Secure API boundary
+
+**Decision:** Keep external API keys in Next.js route handlers; never expose them through public environment variables.
+
+**Why:** Browser-exposed keys would leak credits and make the demo unsafe to publish.
+
+## 2026-08-25 — Lock the provider-independent core to documented access
+
+**Decision:** Depend only on heatmaps and status polling. Use a validated U.S. historical snapshot at 100 m while developing, and treat environmental or segmentation data as optional enrichment.
+
+**Why:** Current coverage is U.S.-only, exposed granularity is 60/80/100 m, and the public hackathon material does not guarantee Premium access.
+
+## 2026-08-25 — Keep card semantics scientifically honest
+
+**Decision:** Show raw values plus cohort percentiles; call the optional overall number Heat Pressure; calculate Comfort only from actual apparent-temperature data; describe Surprise as local deviation.
+
+**Why:** These labels avoid inventing comfort, universal safety scores, statistical significance, or causal meaning that the data does not establish.
+
+## 2026-08-25 — Festival Tetris cannot delay the flagship
+
+**Decision:** Keep a runnable Festival Tetris branch as a derived proof only after the core candidate passes its gates. Do not put it on the submission path by default.
+
+**Why:** Impact and technical execution comprise 75% of judging. The flagship's reliability is the highest-value use of the remaining five days.
+## 2026-08-25 — converge on one reliable Celsius Scout engine
+
+- Treat the deterministic cohort analysis as the single source for the map,
+  cards, scouting tools, Average Is Lying summary, and any LLM evidence packet.
+- Keep LLM use: it may select tools, compare structured results, and write an
+  explanation. Displayed numerical claims must already exist in tool evidence.
+- Make the signature archetypes and coolest-lineup query work from temperature
+  heatmaps alone. Comfort can strengthen a result but cannot be a core gate.
+- Define Heat Pressure as exactly 50% Peak percentile plus 50% Stamina
+  percentile. It is not a health, safety, or universal quality score.
+- Use interval-linear integration for time-weighted mean, exceedance, degree
+  hours, and longest persistence. Keep total exceedance and longest persistence
+  separate.
+- Use an ordinary least-squares post-peak recovery trend for this prototype and
+  label it descriptive, not predictive. A robust estimator is a documented
+  post-hackathon improvement.
+- Use the IQR of successive temperature-rate changes for Chaos and a signed
+  same-hour neighbor-median difference for local deviation. Call the latter a
+  deviation, not statistical significance.
+- Ship a labeled synthetic Phoenix snapshot as the offline reliability path;
+  the FortyGuard adapter replaces the provider-neutral input when credentials
+  are available.
+- Embed a compact Average Is Lying panel in the core because it is a direct
+  cohort summary. Keep Festival Tetris isolated as a derived branch until the
+  main scouting loop passes tests, lint, build, and browser verification.
+
+## Reliability rules
+
+- Comfort is unavailable without supplied apparent temperature or complete
+  humidity-and-wind inputs.
+- Recovery is unavailable without the peak plus two later observations.
+- Local deviation needs at least two matching neighbors.
+- Ranking ties always break by stable location id after shared percentile ranks.
