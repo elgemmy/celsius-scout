@@ -5,6 +5,7 @@ export {
 } from "./average-insight";
 export { classifyArchetype } from "./archetypes";
 export { demoCohort } from "./demo-data";
+export * from "./festival";
 export {
   calculateBaseThermalFeatures,
   degreeHoursAboveThreshold,

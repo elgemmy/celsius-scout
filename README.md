@@ -22,7 +22,12 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`. Try a preset mission, select a map tile, then ask:
+Open `http://localhost:3000` for the flagship scouting board, or `/festival`
+for the isolated Festival Tetris proof. The latter is intentionally a thin
+derived slice; its exact optimizer and limitations are documented in
+[`docs/FESTIVAL-TETRIS.md`](docs/FESTIVAL-TETRIS.md).
+
+On the flagship, try a preset mission, select a map tile, then ask:
 
 > Find an underrated cool location.
 

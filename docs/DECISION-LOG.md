@@ -80,3 +80,20 @@
 - Recovery is unavailable without the peak plus two later observations.
 - Local deviation needs at least two matching neighbors.
 - Ranking ties always break by stable location id after shared percentile ranks.
+
+## 2026-08-25 — Festival Tetris uses exact enumeration for a bounded proof
+
+**Decision:** Keep the derived prototype to six fictional activities and a
+finite set of declared placements. Enumerate every combination, enforce hard
+constraints, minimize attendance-weighted degree-hours above the cohort
+threshold, and use changed activity count only as a tie-break.
+
+**Why:** This produces an inspectable global optimum without adding a solver or
+heuristic whose behavior would be harder to explain during the demo. The
+evaluator is separated from the optimizer so a later constraint solver can
+reuse the same calculations.
+
+**Limit:** The threshold is comparative, the fixture is synthetic, and the
+objective is not a health model. A larger plan needs constraint programming or
+bounded search plus a deliberate policy for trading exposure against change
+cost.
