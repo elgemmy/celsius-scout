@@ -54,6 +54,18 @@ do not prove.
 | The Average Is Lying | Clear FortyGuard value proof with minimal extra scope | Too thin as a standalone identity | Keep inside core; focused branch for storytelling |
 | Festival Tetris | Shows decision impact and deterministic optimization | Can distract from scouting identity and consume demo time | Keep as optional branch/cameo only |
 
+## Runnable branch status
+
+| Branch | Route | Verification | Role |
+| --- | --- | --- | --- |
+| `prototype/celsius-scout-core` | `/` | 67 tests, lint, TypeScript, production build, HTTP smoke | Recommended submission base |
+| `prototype/average-is-lying` | `/average` | 69 tests, lint, TypeScript, production build, HTTP smoke | Focused analytical story |
+| `prototype/festival-tetris` | `/festival` | 73 tests, lint, TypeScript, production build, HTTP smoke | Optional decision/optimization proof |
+
+All three branches are published to the configured GitHub repository. The
+repository remains private; visibility and collaborator access were not changed.
+That access change belongs in the explicit final-submission checklist.
+
 ## Highest-value remaining work
 
 1. Capture and redact one completed FortyGuard heatmap response.
