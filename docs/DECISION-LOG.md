@@ -80,3 +80,12 @@
 - Recovery is unavailable without the peak plus two later observations.
 - Local deviation needs at least two matching neighbors.
 - Ranking ties always break by stable location id after shared percentile ranks.
+
+## 2026-08-25 — make the Average story a focused evidence path
+
+- Keep `/average` isolated from the flagship route and reuse the active analyzed
+  cohort instead of introducing a second data model.
+- Tell the story in two proofs: the full local-mean distribution with persistence,
+  then the real similar-average/different-behavior scouting result.
+- Treat chart positions as presentation transforms. Every visible analytical
+  value comes from `analyzeCohort`, `summarizeAverageMasking`, or the scout tool.
