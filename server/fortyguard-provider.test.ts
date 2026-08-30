@@ -68,11 +68,11 @@ async function expectProviderError(promise: Promise<unknown>, code: string) {
 }
 
 describe("heatmap request validation", () => {
-  it("accepts documented filter types 1-3 and normalizes the default analytic mode", () => {
+  it("accepts documented filter types 1-4 and normalizes the default analytic mode", () => {
     expect(
       validateHeatmapRequest(
         request({
-          dateTime: { filterType: 1, startDate: "2021-01-01", startTime: "09:30" },
+          dateTime: { filterType: 1, startDate: "2019-01-01", startTime: "09:30" },
           analyticType: undefined,
           threshold: undefined,
           direction: undefined,
@@ -85,6 +85,11 @@ describe("heatmap request validation", () => {
         request({ dateTime: { filterType: 3, startDate: "2026-07-15" }, granularity: 80 }),
       ).dateTime.filterType,
     ).toBe(3);
+    expect(
+      validateHeatmapRequest(
+        request({ dateTime: { filterType: 4, startDate: "2026-07-01", endDate: "2026-07-31" } }),
+      ).dateTime.filterType,
+    ).toBe(4);
   });
 
   it.each([
@@ -106,8 +111,10 @@ describe("heatmap request validation", () => {
         },
       },
     ],
-    ["filter type 4", { dateTime: { filterType: 4, startDate: "2026-07-15" } }],
-    ["a pre-2021 date", { dateTime: { filterType: 3, startDate: "2020-12-31" } }],
+    ["a range without an end date", { dateTime: { filterType: 4, startDate: "2026-07-15" } }],
+    ["a backwards date range", { dateTime: { filterType: 4, startDate: "2026-07-15", endDate: "2026-07-14" } }],
+    ["a date range longer than 31 days", { dateTime: { filterType: 4, startDate: "2026-07-01", endDate: "2026-08-02" } }],
+    ["a pre-2019 date", { dateTime: { filterType: 3, startDate: "2018-12-31" } }],
     ["an impossible calendar date", { dateTime: { filterType: 3, startDate: "2026-02-30" } }],
     ["a missing end time for filter type 2", { dateTime: { filterType: 2, startDate: "2026-07-15", startTime: "10:00" } }],
     [
@@ -163,17 +170,33 @@ describe("FortyGuard submission", () => {
     });
   });
 
-  it("accepts the live provider's nested submission envelope", async () => {
+  it("unwraps the documented API response envelope", async () => {
     const fetcher = vi.fn().mockResolvedValue(
       jsonResponse({
         error: false,
-        status_code: 200,
+        status_code: 202,
         message: "Heatmap Submitted Successfully",
         data: { activity_id: activityId },
-      }),
+      }, { status: 202 }),
     );
 
-    await expect(providerWith(fetcher).submitHeatmap(request())).resolves.toEqual({ activityId });
+    await expect(providerWith(fetcher).submitHeatmap(request({
+      dateTime: { filterType: 4, startDate: "2026-07-01", endDate: "2026-07-31" },
+    }))).resolves.toEqual({ activityId });
+    const [, init] = fetcher.mock.calls[0];
+    expect(JSON.parse(init.body).date_time).toEqual({
+      filter_type: 4,
+      start_date: "2026-07-01",
+      end_date: "2026-07-31",
+    });
+  });
+
+  it("does not accept an error envelope even if it contains an activity-like value", async () => {
+    const fetcher = vi.fn().mockResolvedValue(
+      jsonResponse({ error: true, data: { activity_id: activityId } }, { status: 202 }),
+    );
+
+    await expectProviderError(providerWith(fetcher).submitHeatmap(request()), "invalid_provider_response");
   });
 
   it("rejects a malformed activity ID returned by the provider", async () => {
@@ -183,6 +206,48 @@ describe("FortyGuard submission", () => {
 });
 
 describe("status normalization and bounded polling", () => {
+  it("unwraps the documented completed status envelope", async () => {
+    const fetcher = vi.fn().mockResolvedValue(
+      jsonResponse({
+        error: false,
+        status_code: 200,
+        message: "Completed",
+        data: {
+          activity_id: activityId,
+          status: "Completed",
+          result: {
+            map_data: { type: "FeatureCollection", features: [] },
+            stats_data: { units: "°C" },
+          },
+        },
+      }),
+    );
+
+    await expect(providerWith(fetcher).getActivityStatus(activityId)).resolves.toEqual({
+      activityId,
+      status: "Completed",
+      result: {
+        map_data: { type: "FeatureCollection", features: [] },
+        stats_data: { units: "°C" },
+      },
+    });
+  });
+
+  it("rejects a status envelope for a different activity", async () => {
+    const fetcher = vi.fn().mockResolvedValue(
+      jsonResponse({
+        error: false,
+        data: {
+          activity_id: "activity_654321",
+          status: "Completed",
+          result: { map_data: {} },
+        },
+      }),
+    );
+
+    await expectProviderError(providerWith(fetcher).getActivityStatus(activityId), "invalid_provider_response");
+  });
+
   it("normalizes status casing and redacts links and credential-like result fields", async () => {
     const fetcher = vi.fn().mockResolvedValue(
       jsonResponse({

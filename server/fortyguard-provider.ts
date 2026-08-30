@@ -34,7 +34,8 @@ export interface GeoJsonPolygonFeatureCollection {
 export type FortyGuardDateTimeFilter =
   | { filterType: 1; startDate: string; startTime: string }
   | { filterType: 2; startDate: string; startTime: string; endTime: string }
-  | { filterType: 3; startDate: string };
+  | { filterType: 3; startDate: string }
+  | { filterType: 4; startDate: string; endDate: string };
 
 export interface FortyGuardHeatmapRequest {
   polygonAoi: GeoJsonPolygonFeatureCollection;
@@ -50,7 +51,8 @@ interface ProviderHeatmapPayload {
   date_time:
     | { filter_type: 1; start_date: string; start_time: string }
     | { filter_type: 2; start_date: string; start_time: string; end_time: string }
-    | { filter_type: 3; start_date: string };
+    | { filter_type: 3; start_date: string }
+    | { filter_type: 4; start_date: string; end_date: string };
   granularity: FortyGuardGranularity;
   analytic_type: FortyGuardAnalyticType;
   threshold?: number;
@@ -147,12 +149,12 @@ function assertValidDate(value: unknown, field: string, issues: string[]): value
   const [year, month, day] = match.slice(1).map(Number);
   const parsed = new Date(Date.UTC(year, month - 1, day));
   if (
-    year < 2021 ||
+    year < 2019 ||
     parsed.getUTCFullYear() !== year ||
     parsed.getUTCMonth() !== month - 1 ||
     parsed.getUTCDate() !== day
   ) {
-    issues.push(`${field} must be a real date in 2021 or later`);
+    issues.push(`${field} must be a real date in 2019 or later`);
     return false;
   }
   return true;
@@ -243,19 +245,23 @@ function validatePolygonFeatureCollection(
   return valid;
 }
 
+function dateAsUtcMs(value: string): number {
+  const [year, month, day] = value.split("-").map(Number);
+  return Date.UTC(year, month - 1, day);
+}
+
 function validateDateTime(value: unknown, issues: string[]): value is FortyGuardDateTimeFilter {
-  if (!isRecord(value) || ![1, 2, 3].includes(value.filterType as number)) {
-    issues.push("dateTime.filterType must be 1, 2, or 3");
+  if (!isRecord(value) || ![1, 2, 3, 4].includes(value.filterType as number)) {
+    issues.push("dateTime.filterType must be 1, 2, 3, or 4");
     return false;
   }
 
   const filterType = value.filterType;
   const validDate = assertValidDate(value.startDate, "dateTime.startDate", issues);
 
-  if ("endDate" in value) issues.push("dateTime.endDate is not supported for filter types 1-3");
-
   if (filterType === 1) {
     const validStart = assertValidTime(value.startTime, "dateTime.startTime", issues);
+    if ("endDate" in value) issues.push("dateTime.endDate is not allowed for filter type 1");
     if ("endTime" in value) issues.push("dateTime.endTime is not allowed for filter type 1");
     return validDate && validStart;
   }
@@ -263,6 +269,7 @@ function validateDateTime(value: unknown, issues: string[]): value is FortyGuard
   if (filterType === 2) {
     const validStart = assertValidTime(value.startTime, "dateTime.startTime", issues);
     const validEnd = assertValidTime(value.endTime, "dateTime.endTime", issues);
+    if ("endDate" in value) issues.push("dateTime.endDate is not allowed for filter type 2");
     if (validStart && validEnd && timeAsMinutes(value.startTime as string) >= timeAsMinutes(value.endTime as string)) {
       issues.push("dateTime.endTime must be later than dateTime.startTime on the same day");
       return false;
@@ -270,9 +277,22 @@ function validateDateTime(value: unknown, issues: string[]): value is FortyGuard
     return validDate && validStart && validEnd;
   }
 
-  if ("startTime" in value) issues.push("dateTime.startTime is not allowed for filter type 3");
-  if ("endTime" in value) issues.push("dateTime.endTime is not allowed for filter type 3");
-  return validDate;
+  if (filterType === 3) {
+    if ("endDate" in value) issues.push("dateTime.endDate is not allowed for filter type 3");
+    if ("startTime" in value) issues.push("dateTime.startTime is not allowed for filter type 3");
+    if ("endTime" in value) issues.push("dateTime.endTime is not allowed for filter type 3");
+    return validDate;
+  }
+
+  const validEndDate = assertValidDate(value.endDate, "dateTime.endDate", issues);
+  if ("startTime" in value) issues.push("dateTime.startTime is not allowed for filter type 4");
+  if ("endTime" in value) issues.push("dateTime.endTime is not allowed for filter type 4");
+  if (validDate && validEndDate) {
+    const durationDays = (dateAsUtcMs(value.endDate as string) - dateAsUtcMs(value.startDate as string)) / 86_400_000;
+    if (durationDays < 0) issues.push("dateTime.endDate must not be earlier than dateTime.startDate");
+    if (durationDays > 31) issues.push("dateTime range must not exceed one month (31 days)");
+  }
+  return validDate && validEndDate;
 }
 
 export function validateHeatmapRequest(input: unknown): FortyGuardHeatmapRequest {
@@ -355,7 +375,13 @@ function toProviderPayload(request: FortyGuardHeatmapRequest): ProviderHeatmapPa
             start_time: dateTime.startTime,
             end_time: dateTime.endTime,
           }
-        : { filter_type: 3 as const, start_date: dateTime.startDate };
+        : dateTime.filterType === 3
+          ? { filter_type: 3 as const, start_date: dateTime.startDate }
+          : {
+              filter_type: 4 as const,
+              start_date: dateTime.startDate,
+              end_date: dateTime.endDate,
+            };
 
   return {
     polygon_aoi: request.polygonAoi,
@@ -415,15 +441,22 @@ function normalizeActivityId(value: unknown): string | undefined {
   return typeof value === "string" && ACTIVITY_ID_PATTERN.test(value) ? value : undefined;
 }
 
-function submissionActivityId(data: unknown): string | undefined {
-  if (!isRecord(data)) return undefined;
-  const nested = isRecord(data.data) ? data.data : undefined;
-  return (
-    normalizeActivityId(data.activity_id) ??
-    normalizeActivityId(data.activityId) ??
-    normalizeActivityId(nested?.activity_id) ??
-    normalizeActivityId(nested?.activityId)
+/**
+ * The documented API wraps endpoint payloads in `{ data: ... }`. Keeping
+ * support for an already-unwrapped payload makes this boundary tolerant of a
+ * future SDK or proxy without weakening validation of the values we consume.
+ */
+function unwrapProviderData(value: unknown): Record<string, unknown> | null {
+  if (!isRecord(value)) return null;
+  if (value.error === true) return null;
+  const nested = isRecord(value.data) ? value.data : null;
+  const nestedIsEndpointPayload = nested && (
+    typeof nested.status === "string" ||
+    typeof nested.state === "string" ||
+    normalizeActivityId(nested.activity_id) !== undefined ||
+    normalizeActivityId(nested.activityId) !== undefined
   );
+  return nestedIsEndpointPayload ? nested : value;
 }
 
 function sanitizeProviderJson(value: unknown, seen = new WeakSet<object>()): SafeProviderJson {
@@ -464,35 +497,33 @@ function completedResult(data: Record<string, unknown>): SafeProviderJson {
 }
 
 function normalizeStatus(data: unknown, expectedActivityId: string): FortyGuardActivityStatus {
-  if (!isRecord(data)) {
+  const payload = unwrapProviderData(data);
+  if (!payload) {
     throw new FortyGuardProviderError("FortyGuard returned an invalid status response", {
       code: "invalid_provider_response",
       activityId: expectedActivityId,
     });
   }
 
-  const envelope = isRecord(data.data) && (typeof data.data.status === "string" || typeof data.data.state === "string")
-    ? data.data
-    : data;
-  const responseActivityId = normalizeActivityId(envelope.activity_id) ?? normalizeActivityId(envelope.activityId);
-  if (responseActivityId && responseActivityId !== expectedActivityId) {
+  const returnedActivityId = normalizeActivityId(payload.activity_id) ?? normalizeActivityId(payload.activityId);
+  if (returnedActivityId !== undefined && returnedActivityId !== expectedActivityId) {
     throw new FortyGuardProviderError("FortyGuard returned a mismatched activity ID", {
       code: "invalid_provider_response",
       activityId: expectedActivityId,
     });
   }
 
-  const rawStatus = typeof envelope.status === "string"
-    ? envelope.status
-    : typeof envelope.state === "string"
-      ? envelope.state
+  const rawStatus = typeof payload.status === "string"
+    ? payload.status
+    : typeof payload.state === "string"
+      ? payload.state
       : "";
   const status = rawStatus.trim().toLowerCase();
   if (status === "processing" || status === "pending" || status === "queued") {
     return { activityId: expectedActivityId, status: "Processing" };
   }
   if (status === "completed" || status === "complete" || status === "succeeded" || status === "success") {
-    return { activityId: expectedActivityId, status: "Completed", result: completedResult(envelope) };
+    return { activityId: expectedActivityId, status: "Completed", result: completedResult(payload) };
   }
   if (status === "failed" || status === "failure" || status === "error") {
     return { activityId: expectedActivityId, status: "Failed" };
@@ -575,7 +606,10 @@ export function createFortyGuardProvider(options: FortyGuardProviderOptions = {}
 
       if (!response.ok) throw httpError(response);
       const data = await parseJson(response);
-      const activityId = submissionActivityId(data);
+      const payload = unwrapProviderData(data);
+      const activityId = payload
+        ? normalizeActivityId(payload.activity_id) ?? normalizeActivityId(payload.activityId)
+        : undefined;
       if (!activityId) {
         throw new FortyGuardProviderError("FortyGuard did not return a valid activity ID", {
           code: "invalid_provider_response",

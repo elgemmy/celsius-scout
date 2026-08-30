@@ -11,9 +11,9 @@ Source reviewed: official FortyGuard API documentation on 25 August 2026.
 
 Authentication uses the `api-key` request header.
 
-Heatmap requests accept a GeoJSON FeatureCollection polygon, a date/time filter, and granularity of 60, 80, or 100 metres. Analytic modes include temperature (`tcm`), peak time, threshold exceedance, and threshold persistence.
+Heatmap requests accept a GeoJSON FeatureCollection polygon, a date/time filter, and granularity of 60, 80, or 100 metres. Supported dates begin in 2019. Filter types cover a single hour, same-day hour range, single day, or a date range of at most 31 days. Analytic modes include temperature (`tcm`), peak time, threshold exceedance, and threshold persistence.
 
-The API is asynchronous: submission returns an activity ID, then the status endpoint returns Processing, Completed, or Failed. Use bounded exponential polling such as 3s, 6s, then 12s; stop on terminal states and cache repeated polygon plus date/time requests.
+The API is asynchronous: submission returns an activity ID, then the status endpoint returns Processing, Completed, or Failed. Both submission and status payloads use a documented top-level envelope whose endpoint-specific values live under `data`. Use bounded exponential polling such as 3s, 6s, then 12s; stop on terminal states and cache repeated polygon plus date/time requests.
 
 ## Prototype policy
 
@@ -27,8 +27,9 @@ The API is asynchronous: submission returns an activity ID, then the status endp
 
 `server/fortyguard-provider.ts` now validates polygon closure, coordinate order
 and ranges, date/filter combinations, granularity, analytical threshold rules,
-activity identifiers, and safe provider responses. It keeps the API key on the
-server, normalizes terminal statuses, tolerates the initial status race, honors
+activity identifiers, documented response envelopes, and safe provider
+responses. It keeps the API key on the server, verifies returned activity IDs,
+normalizes terminal statuses, tolerates the initial status race, honors
 rate-limit delays, and stops after bounded polling attempts.
 
 The provider deliberately returns a safe generic completed result. The next API
