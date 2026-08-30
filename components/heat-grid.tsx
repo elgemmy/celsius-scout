@@ -7,6 +7,7 @@ export interface MapLocation {
   y: number;
   width: number;
   height: number;
+  clipPath?: string;
   tone: "cool" | "mild" | "warm" | "hot" | "extreme";
 }
 
@@ -25,6 +26,8 @@ const TONE_LABELS: Record<MapLocation["tone"], string> = {
 };
 
 export function HeatGrid({ locations, selectedIds, onSelect }: HeatGridProps) {
+  const minimum = Math.min(...locations.map((location) => location.temperatureC));
+  const maximum = Math.max(...locations.map((location) => location.temperatureC));
   return (
     <div className="thermal-map" aria-label="Interactive thermal scouting map">
       <svg
@@ -34,9 +37,9 @@ export function HeatGrid({ locations, selectedIds, onSelect }: HeatGridProps) {
         aria-labelledby="map-title map-description"
         preserveAspectRatio="none"
       >
-        <title id="map-title">Peak temperature map of the Celsius Scout demo cohort</title>
+        <title id="map-title">Peak temperature map of the active Celsius Scout cohort</title>
         <desc id="map-description">
-          A stylized district map with twelve discrete selectable tiles colored from cool teal to hot orange.
+          A stylized district map with {locations.length} discrete selectable tiles colored from cool teal to hot orange.
         </desc>
         <rect width="760" height="570" rx="30" fill="#13272b" />
         <path d="M-20 92 C140 42 247 138 421 86 S671 70 790 27" className="map-road map-road-wide" />
@@ -69,6 +72,7 @@ export function HeatGrid({ locations, selectedIds, onSelect }: HeatGridProps) {
                 top: `${location.y}%`,
                 width: `${location.width}%`,
                 height: `${location.height}%`,
+                clipPath: location.clipPath,
               }}
               onClick={() => onSelect(location.id)}
               aria-pressed={selected}
@@ -82,9 +86,9 @@ export function HeatGrid({ locations, selectedIds, onSelect }: HeatGridProps) {
       </div>
 
       <div className="map-legend" aria-label="Peak temperature legend">
-        <span>30°C</span>
+        <span>{minimum.toFixed(1)}°C</span>
         <i aria-hidden="true" />
-        <span>44°C</span>
+        <span>{maximum.toFixed(1)}°C</span>
       </div>
     </div>
   );

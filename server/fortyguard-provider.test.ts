@@ -163,6 +163,19 @@ describe("FortyGuard submission", () => {
     });
   });
 
+  it("accepts the live provider's nested submission envelope", async () => {
+    const fetcher = vi.fn().mockResolvedValue(
+      jsonResponse({
+        error: false,
+        status_code: 200,
+        message: "Heatmap Submitted Successfully",
+        data: { activity_id: activityId },
+      }),
+    );
+
+    await expect(providerWith(fetcher).submitHeatmap(request())).resolves.toEqual({ activityId });
+  });
+
   it("rejects a malformed activity ID returned by the provider", async () => {
     const fetcher = vi.fn().mockResolvedValue(jsonResponse({ activity_id: "../../secret" }, { status: 202 }));
     await expectProviderError(providerWith(fetcher).submitHeatmap(request()), "invalid_provider_response");
@@ -191,6 +204,34 @@ describe("status normalization and bounded polling", () => {
         report_url: "[redacted-link]",
         source: "[redacted-link]",
       },
+    });
+  });
+
+  it("normalizes the live provider's nested status envelope", async () => {
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse({
+        error: false,
+        status_code: 200,
+        message: "Processing",
+        data: { activity_id: activityId, status: "Processing" },
+      }))
+      .mockResolvedValueOnce(jsonResponse({
+        error: false,
+        status_code: 200,
+        message: "Completed",
+        data: { activity_id: activityId, status: "Completed", result: { tiles: 7 } },
+      }));
+
+    const provider = providerWith(fetcher);
+    await expect(provider.getActivityStatus(activityId)).resolves.toEqual({
+      activityId,
+      status: "Processing",
+    });
+    await expect(provider.getActivityStatus(activityId)).resolves.toEqual({
+      activityId,
+      status: "Completed",
+      result: { tiles: 7 },
     });
   });
 

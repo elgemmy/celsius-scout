@@ -8,14 +8,15 @@ import {
   findSimilarAverageDifferentBehaviorPair,
   findUnderratedCoolLocation,
   inspectLocation,
+  type CelsiusScoutAnalysis,
   type ScoutToolResult,
+  type ThermalCohort,
 } from "../lib";
 import { validateNumericGrounding, type GroundingResult } from "./grounding";
 
 const RESPONSES_URL = "https://api.openai.com/v1/responses";
 const MAX_MODEL_TURNS = 3;
 const MAX_TOOL_CALLS = 4;
-const analysis = analyzeCohort(demoCohort);
 
 type FetchLike = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
 
@@ -36,6 +37,7 @@ export interface ScoutAgentResult {
 
 export interface ScoutAgentOptions {
   question: string;
+  cohort?: ThermalCohort;
   apiKey?: string;
   model?: string;
   fetch?: FetchLike;
@@ -60,8 +62,9 @@ const noArguments = {
   additionalProperties: false,
 } as const;
 
-const locationIds = analysis.locations.map((location) => location.id);
-const tools = [
+function toolsFor(analysis: CelsiusScoutAnalysis) {
+  const locationIds = analysis.locations.map((location) => location.id);
+  return [
   {
     type: "function",
     name: "find_coolest_lineup",
@@ -116,7 +119,8 @@ const tools = [
       additionalProperties: false,
     },
   },
-] as const;
+  ] as const;
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -132,7 +136,11 @@ function stringValue(value: unknown, field: string): string {
   return value;
 }
 
-function executeTool(name: string, args: Record<string, unknown>): ScoutToolResult<unknown> {
+function executeTool(
+  analysis: CelsiusScoutAnalysis,
+  name: string,
+  args: Record<string, unknown>,
+): ScoutToolResult<unknown> {
   switch (name) {
     case "find_coolest_lineup":
       return findCoolestLineup(analysis, finiteNumber(args.count, "count"));
@@ -160,7 +168,7 @@ function executeTool(name: string, args: Record<string, unknown>): ScoutToolResu
   }
 }
 
-function deterministicTool(question: string): ScoutTraceEntry {
+function deterministicTool(analysis: CelsiusScoutAnalysis, question: string): ScoutTraceEntry {
   const normalized = question.toLowerCase();
   let tool = "find_biggest_thermal_fraud";
   let args: Record<string, unknown> = {};
@@ -177,7 +185,7 @@ function deterministicTool(question: string): ScoutTraceEntry {
     args = { maximumMeanDifferenceC: 1 };
   }
 
-  return { tool, arguments: args, result: executeTool(tool, args) };
+  return { tool, arguments: args, result: executeTool(analysis, tool, args) };
 }
 
 function deterministicExplanation(entry: ScoutTraceEntry): string {
@@ -187,8 +195,12 @@ function deterministicExplanation(entry: ScoutTraceEntry): string {
   return `${entry.result.answer} ${evidence.join("; ")}.`;
 }
 
-function deterministicResult(question: string, reason?: string): ScoutAgentResult {
-  const entry = deterministicTool(question);
+function deterministicResult(
+  analysis: CelsiusScoutAnalysis,
+  question: string,
+  reason?: string,
+): ScoutAgentResult {
+  const entry = deterministicTool(analysis, question);
   const explanation = deterministicExplanation(entry);
   return {
     mode: "deterministic",
@@ -228,7 +240,9 @@ async function requestModel(
   apiKey: string,
   model: string,
   input: unknown[],
+  analysis: CelsiusScoutAnalysis,
 ): Promise<ResponsesPayload> {
+  const locationIds = analysis.locations.map((location) => location.id);
   const response = await fetcher(RESPONSES_URL, {
     method: "POST",
     headers: { authorization: `Bearer ${apiKey}`, "content-type": "application/json" },
@@ -242,10 +256,10 @@ async function requestModel(
         "Calculations and rankings come only from tools. You may analyze, compare, and explain their outputs.",
         "Every number in the final answer must occur verbatim in returned tool evidence.",
         "Make descriptive observations, never causal, medical, safety, or statistical-significance claims.",
-        `Active synthetic cohort: ${analysis.cohort.name}. Location ids: ${locationIds.join(", ")}.`,
+        `Active ${analysis.cohort.source.kind} cohort: ${analysis.cohort.name}. Location ids: ${locationIds.join(", ")}.`,
       ].join(" "),
       input,
-      tools,
+      tools: toolsFor(analysis),
     }),
     cache: "no-store",
   });
@@ -257,9 +271,10 @@ async function requestModel(
 export async function runScoutAgent(options: ScoutAgentOptions): Promise<ScoutAgentResult> {
   const question = options.question.trim();
   if (!question || question.length > 500) throw new Error("Question must contain 1 to 500 characters");
+  const analysis = analyzeCohort(options.cohort ?? demoCohort);
   const apiKey = options.apiKey ?? process.env.OPENAI_API_KEY;
   const model = options.model ?? process.env.OPENAI_MODEL;
-  if (!apiKey || !model) return deterministicResult(question, "LLM credentials are not configured");
+  if (!apiKey || !model) return deterministicResult(analysis, question, "LLM credentials are not configured");
 
   const fetcher = options.fetch ?? fetch;
   const trace: ScoutTraceEntry[] = [];
@@ -267,31 +282,31 @@ export async function runScoutAgent(options: ScoutAgentOptions): Promise<ScoutAg
 
   try {
     for (let turn = 0; turn < MAX_MODEL_TURNS; turn += 1) {
-      const payload = await requestModel(fetcher, apiKey, model, input);
+      const payload = await requestModel(fetcher, apiKey, model, input, analysis);
       const calls = functionCalls(payload.output);
       if (!calls.length) {
         const explanation = outputText(payload);
-        if (!explanation || !trace.length) return deterministicResult(question, "The LLM did not complete a grounded tool call");
+        if (!explanation || !trace.length) return deterministicResult(analysis, question, "The LLM did not complete a grounded tool call");
         const grounding = validateNumericGrounding(explanation, trace);
         if (!grounding.grounded) {
-          return deterministicResult(question, `Rejected unsupported numerical claims: ${grounding.unsupportedNumbers.join(", ")}`);
+          return deterministicResult(analysis, question, `Rejected unsupported numerical claims: ${grounding.unsupportedNumbers.join(", ")}`);
         }
         return { mode: "llm", question, explanation, trace, grounding };
       }
-      if (trace.length + calls.length > MAX_TOOL_CALLS) return deterministicResult(question, "The LLM exceeded the tool-call limit");
+      if (trace.length + calls.length > MAX_TOOL_CALLS) return deterministicResult(analysis, question, "The LLM exceeded the tool-call limit");
 
       const outputs = calls.map((call) => {
         const parsed: unknown = JSON.parse(call.arguments);
         if (!isRecord(parsed)) throw new Error("Tool arguments must be a JSON object");
-        const result = executeTool(call.name, parsed);
+        const result = executeTool(analysis, call.name, parsed);
         trace.push({ tool: call.name, arguments: parsed, result });
         return { type: "function_call_output", call_id: call.call_id, output: JSON.stringify(result) };
       });
       input = [...input, ...(payload.output ?? []), ...outputs];
     }
-    return deterministicResult(question, "The LLM reached the model-turn limit");
+    return deterministicResult(analysis, question, "The LLM reached the model-turn limit");
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown LLM error";
-    return deterministicResult(question, `The LLM path failed safely: ${message}`);
+    return deterministicResult(analysis, question, `The LLM path failed safely: ${message}`);
   }
 }

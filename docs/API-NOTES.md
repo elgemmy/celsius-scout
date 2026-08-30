@@ -32,5 +32,13 @@ server, normalizes terminal statuses, tolerates the initial status race, honors
 rate-limit delays, and stops after bounded polling attempts.
 
 The provider deliberately returns a safe generic completed result. The next API
-task is to capture a real response and write a tested mapper into the
-provider-neutral `ThermalCohort`. No completed-response cache exists yet.
+boundary is now verified against the live envelopes: submissions carry
+`data.activity_id`, while statuses carry `data.status`. Completed heatmaps expose
+`data.result.map_data.features` with `tile_id`, `average_temperature`,
+`min_temperature`, `max_temperature`, and Polygon geometry.
+
+`server/fortyguard-mapper.ts` joins time-specific responses by stable `tile_id`
+and fails closed on tile-count, footprint, or schema drift. The pinned snapshot
+contains eleven hourly layers, with raw responses stored separately from the
+derived cohort and SHA-256 request/result hashes in its manifest. General live
+route requests still do not have a canonical-request cache.

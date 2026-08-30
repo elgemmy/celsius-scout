@@ -68,6 +68,7 @@ function normalizeLocation(location: ThermalLocation): ThermalLocation {
 
   return {
     ...location,
+    footprint: location.footprint?.map((position) => ({ ...position })),
     samples,
     neighborIds: location.neighborIds ? [...new Set(location.neighborIds)].sort() : undefined,
     tags: location.tags ? [...new Set(location.tags)].sort() : undefined,

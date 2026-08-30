@@ -80,3 +80,32 @@
 - Recovery is unavailable without the peak plus two later observations.
 - Local deviation needs at least two matching neighbors.
 - Ranking ties always break by stable location id after shared percentile ranks.
+
+## 2026-08-30 — Use a verified hourly FortyGuard snapshot as the default
+
+**Decision:** Default the product to eleven captured 100 m `tcm` layers over a
+small Central Phoenix area, joined only by stable provider `tile_id`. Keep the
+synthetic fixture behind a visible Demo switch and as the no-network fallback.
+
+**Why:** A same-day range response contains aggregate minimum, maximum, and mean
+values but no timestamps for those extrema. Treating those aggregates as a
+series would invent temporal order. Time-specific responses preserve the core
+series-to-features loop and make Recovery, persistence, peak time, and Chaos
+traceable to observed ordered samples.
+
+**Implementation boundary:** Store sanitized raw responses separately, hash each
+request and result, validate the observed response schema, fail on tile or
+footprint drift, render returned polygons, and select ten spatially distributed
+tiles deterministically. Do not infer humidity, wind, apparent temperature, or
+named landmarks from temperature heatmaps.
+
+## 2026-08-30 — Put the metric contract inside the experience
+
+**Decision:** Make the header’s “How ratings work” link open a complete in-page
+field guide for every card rating and supporting statistic. The guide reflects
+the active cohort threshold, name, provenance, and Comfort availability.
+
+**Why:** Cohort percentiles and playful labels are easy to misread as universal
+or safety scores. Keeping definitions, formulas, unavailable-state behavior, and
+claim boundaries beside the interaction makes the scouting metaphor legible
+without separating users from the board.

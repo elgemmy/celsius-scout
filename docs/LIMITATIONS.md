@@ -2,14 +2,14 @@
 
 ## Current technical limits
 
-- The default Phoenix cohort is synthetic and intended for deterministic product
-  demonstration, not environmental reporting.
-- FortyGuard submission and polling are implemented, but the completed provider
-  GeoJSON is not yet mapped into `ThermalCohort`; the public documentation does
-  not fully specify every returned tile property.
-- No completed-response cache exists yet. Repeated live calls could spend credits.
-- The map uses synthetic discrete footprints over a stylized underlay, not the
-  exact returned FortyGuard polygons.
+- Observed mode is a pinned August 18, 2026 Central Phoenix historical snapshot,
+  not current conditions or a forecast. Demo mode remains synthetic.
+- The versioned mapper supports the verified hourly heatmap response contract;
+  unrecognized provider schema changes fail closed.
+- The immutable snapshot capture is hashed and reused, but arbitrary live route
+  requests have no general canonical-request cache and could spend credits.
+- Observed tiles use returned FortyGuard polygons over a stylized underlay; the
+  underlay is not a street-accurate basemap.
 - The optional LLM route is covered with mocked responses; no configured model
   call is required for the offline demo.
 - Numeric grounding checks occurrence, not semantic equivalence. Important
@@ -38,7 +38,6 @@
 
 ## Production hardening after the hackathon
 
-Add a versioned raw-response schema, immutable snapshot cache, provenance hash,
-map rendering from actual polygons, robust recovery estimator, agent evaluation
-set, accessibility review with a real browser, and monitoring for provider and
-model latency/cost.
+Add schema migration support, a general live-request cache, a geographic
+basemap, robust recovery estimator, broader agent evaluation set, accessibility
+review with a real browser, and monitoring for provider and model latency/cost.

@@ -415,6 +415,17 @@ function normalizeActivityId(value: unknown): string | undefined {
   return typeof value === "string" && ACTIVITY_ID_PATTERN.test(value) ? value : undefined;
 }
 
+function submissionActivityId(data: unknown): string | undefined {
+  if (!isRecord(data)) return undefined;
+  const nested = isRecord(data.data) ? data.data : undefined;
+  return (
+    normalizeActivityId(data.activity_id) ??
+    normalizeActivityId(data.activityId) ??
+    normalizeActivityId(nested?.activity_id) ??
+    normalizeActivityId(nested?.activityId)
+  );
+}
+
 function sanitizeProviderJson(value: unknown, seen = new WeakSet<object>()): SafeProviderJson {
   if (value === null || typeof value === "boolean") return value;
   if (typeof value === "number") return Number.isFinite(value) ? value : null;
@@ -460,13 +471,28 @@ function normalizeStatus(data: unknown, expectedActivityId: string): FortyGuardA
     });
   }
 
-  const rawStatus = typeof data.status === "string" ? data.status : typeof data.state === "string" ? data.state : "";
+  const envelope = isRecord(data.data) && (typeof data.data.status === "string" || typeof data.data.state === "string")
+    ? data.data
+    : data;
+  const responseActivityId = normalizeActivityId(envelope.activity_id) ?? normalizeActivityId(envelope.activityId);
+  if (responseActivityId && responseActivityId !== expectedActivityId) {
+    throw new FortyGuardProviderError("FortyGuard returned a mismatched activity ID", {
+      code: "invalid_provider_response",
+      activityId: expectedActivityId,
+    });
+  }
+
+  const rawStatus = typeof envelope.status === "string"
+    ? envelope.status
+    : typeof envelope.state === "string"
+      ? envelope.state
+      : "";
   const status = rawStatus.trim().toLowerCase();
   if (status === "processing" || status === "pending" || status === "queued") {
     return { activityId: expectedActivityId, status: "Processing" };
   }
   if (status === "completed" || status === "complete" || status === "succeeded" || status === "success") {
-    return { activityId: expectedActivityId, status: "Completed", result: completedResult(data) };
+    return { activityId: expectedActivityId, status: "Completed", result: completedResult(envelope) };
   }
   if (status === "failed" || status === "failure" || status === "error") {
     return { activityId: expectedActivityId, status: "Failed" };
@@ -549,9 +575,7 @@ export function createFortyGuardProvider(options: FortyGuardProviderOptions = {}
 
       if (!response.ok) throw httpError(response);
       const data = await parseJson(response);
-      const activityId = isRecord(data)
-        ? normalizeActivityId(data.activity_id) ?? normalizeActivityId(data.activityId)
-        : undefined;
+      const activityId = submissionActivityId(data);
       if (!activityId) {
         throw new FortyGuardProviderError("FortyGuard did not return a valid activity ID", {
           code: "invalid_provider_response",

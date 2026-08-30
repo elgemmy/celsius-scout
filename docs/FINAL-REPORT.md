@@ -4,8 +4,8 @@
 
 The corrected Celsius Scout concept is now the repository's single product
 identity. The stable core is runnable offline, visually coherent, backed by one
-deterministic analysis engine, and ready for a real FortyGuard snapshot once a
-completed response is captured.
+deterministic analysis engine, and defaults to a captured FortyGuard historical
+snapshot with a visible synthetic fallback.
 
 The strongest submission direction is `prototype/celsius-scout-core`.
 
@@ -26,6 +26,22 @@ The strongest submission direction is `prototype/celsius-scout-core`.
 - Kept Festival Tetris isolated as a derived optimization branch.
 
 ## Reliability evidence
+
+### August 30 live-data integration
+
+- Verified live nested submission/status envelopes against the configured API.
+- Captured eleven hourly 100 m layers containing 42 stable polygons each.
+- Added a strict mapper, immutable sanitized raw snapshot, and SHA-256
+  request/result provenance.
+- Defaulted the UI and grounded scout endpoint to a deterministic ten-tile
+  observed cohort selected for spatial coverage.
+- Preserved the labeled synthetic Demo mode without external keys or network.
+- Expanded the suite to 73 passing tests with clean lint, strict TypeScript, and
+  a production build.
+
+The remaining unproven gate is interactive browser/mobile/accessibility QA. The
+in-app workflow was attempted again, but this workspace exposed no browser
+backend.
 
 At the core checkpoint:
 
@@ -68,13 +84,13 @@ That access change belongs in the explicit final-submission checklist.
 
 ## Highest-value remaining work
 
-1. Capture and redact one completed FortyGuard heatmap response.
-2. Implement a tested response-to-`ThermalCohort` mapper and immutable snapshot.
-3. Audition three small U.S. areas and choose the most legible variation.
-4. Run the scripted agent evaluation prompts with the actual configured model.
-5. Deploy the core, perform a real browser/mobile/accessibility pass, and record
+1. Perform a real browser/mobile/accessibility pass on Observed and Demo modes.
+2. Deploy the core and record
    the three-minute demo.
-6. Make the repository public and add the required hackathon collaborator only
+3. Run the scripted agent evaluation prompts with the actual configured model.
+4. Audition another area only if the captured Phoenix variation is visually
+   illegible; otherwise avoid additional provider spend.
+5. Make the repository public and add the required hackathon collaborator only
    when ready for submission.
 
 ## Suggested five-day allocation

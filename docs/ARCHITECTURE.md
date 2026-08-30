@@ -1,9 +1,9 @@
 # Architecture
 
 ```text
-synthetic fixture ─┐
-                   ├→ ThermalCohort → features → cohort scores → archetypes
-FortyGuard adapter ┘                                      │
+synthetic fixture ─────────┐
+                          ├→ ThermalCohort → features → cohort scores → archetypes
+FortyGuard hourly snapshot┘                                      │
                                                          ├→ scouting tools
                                                          ├→ Average Is Lying
                                                          └→ Festival exposure
@@ -19,6 +19,7 @@ structured results → map + thermal cards + evidence report
 | Layer | Code | Owns | Must not own |
 | --- | --- | --- | --- |
 | Provider | `server/fortyguard-provider.ts` | Auth, request validation, safe polling/status | Thermal feature formulas |
+| Mapper | `server/fortyguard-mapper.ts` | Captured schema validation, stable tile joins, centroids/footprints | Scoring or UI labels |
 | Domain | `lib/` | Normalized series, metrics, percentiles, archetypes, scout tools | Provider response shapes, React state |
 | Agent | `server/scout-agent.ts` | Tool selection, bounded loop, explanation | Private calculations or direct FortyGuard calls |
 | Grounding | `server/grounding.ts` | Reject numerical claims absent from evidence | Recompute or infer values |
@@ -26,11 +27,16 @@ structured results → map + thermal cards + evidence report
 
 ## Data modes
 
-The application always starts from the synthetic Phoenix fixture. A live path
-submits and polls FortyGuard safely, but importing a completed provider response
-requires a versioned mapper after the exact response properties are captured.
-That missing boundary is explicit; the UI never silently relabels fixture data
-as observed data.
+The application starts from the immutable Central Phoenix FortyGuard snapshot:
+eleven time-specific 100 m heatmaps joined by stable `tile_id`. It selects ten
+spatially distributed returned polygons for the focused scouting cohort. The
+Observed/Demo control switches to the synthetic Phoenix fixture without network
+access. Both modes use the same domain engine and carry explicit provenance.
+
+The raw sanitized provider results live separately from derived cohort data.
+The capture manifest records activity IDs plus SHA-256 request/result hashes.
+The capture script skips completed files, but the public live request routes do
+not yet provide a general cache.
 
 ## Agent modes
 

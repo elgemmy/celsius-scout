@@ -8,17 +8,18 @@ archetypes, comparisons, lineups, and Average Is Lying summary. An optional LLM
 agent can choose those tools and explain their evidence; it never owns the
 displayed calculations.
 
-The default demo is fully offline and uses a conspicuously labeled synthetic
-Phoenix cohort. Server-side FortyGuard routes and a bounded async provider are
-ready for a real captured heatmap response. A live response-to-cohort mapper is
-intentionally deferred until the exact returned GeoJSON properties are verified.
+The default experience is fully offline and uses an immutable, provenance-hashed
+FortyGuard snapshot: eleven hourly 100 m layers over a small Central Phoenix
+area. A visible switch retains the conspicuously labeled synthetic cohort as a
+deterministic fallback. Server-side routes can safely capture a replacement
+snapshot without exposing the provider key.
 
 ## Start
 
 Requires Node.js 20.9 or later. Node 22 LTS is recommended.
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
@@ -45,6 +46,9 @@ Copy `.env.example` to `.env.local`. Never prefix these keys with `NEXT_PUBLIC_`
 - `FORTYGUARD_API_KEY`: enables the server-only heatmap/status routes.
 - `FORTYGUARD_API_BASE_URL`: optional compatible endpoint override.
 - `OPENAI_API_KEY` and `OPENAI_MODEL`: enable LLM planning/explanation.
+
+With the development server running, `npm run capture:fortyguard` reuses any
+completed hourly files and only submits missing layers for the pinned snapshot.
 
 ## What to read next
 

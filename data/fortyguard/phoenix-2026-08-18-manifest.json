@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "id": "phoenix-2026-08-18-100m-hourly",
+  "name": "Central Phoenix FortyGuard snapshot",
+  "timezone": "America/Phoenix",
+  "thresholdC": 38,
+  "source": {
+    "label": "FortyGuard observed hourly ambient-air temperature · 100 m historical snapshot",
+    "kind": "fortyguard"
+  },
+  "date": "2026-08-18",
+  "granularityM": 100,
+  "polygonAoi": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -112.08,
+                33.448
+              ],
+              [
+                -112.07,
+                33.448
+              ],
+              [
+                -112.07,
+                33.456
+              ],
+              [
+                -112.08,
+                33.456
+              ],
+              [
+                -112.08,
+                33.448
+              ]
+            ]
+          ]
+        },
+        "properties": null
+      }
+    ]
+  },
+  "captures": [
+    {
+      "time": "10:00",
+      "timestamp": "2026-08-18T10:00:00-07:00",
+      "activityId": "17de663c-5222-4696-afef-dcde8724775b",
+      "requestSha256": "db058829806f5c7989de8860ba9261b9ad8a4251900017afd01376a15f4a0b7f",
+      "resultSha256": "96d12c00a7a637d48017c528f5397a292ea6a58974dccd6be87e79db9ba30fdf",
+      "file": "raw/phoenix-2026-08-18/10-00.json"
+    },
+    {
+      "time": "11:00",
+      "timestamp": "2026-08-18T11:00:00-07:00",
+      "activityId": "1a980f0a-a3e2-4d06-ba9a-fc7aff5234fd",
+      "requestSha256": "83e8dc0452cadfdc5f3916b28d64fd88b005ec303b9a666e18ba0ceb591ff6fc",
+      "resultSha256": "ccc32ba0788bc4defc90ed89120d9e666cf193e13f5ebed3e7e2f12f457f2433",
+      "file": "raw/phoenix-2026-08-18/11-00.json"
+    },
+    {
+      "time": "12:00",
+      "timestamp": "2026-08-18T12:00:00-07:00",
+      "activityId": "b2eedef7-42dd-41f6-9fa7-134a9f2f943c",
+      "requestSha256": "79ec685b9b4a85d6fe664c8e6554df721fd5a6c969f275a1943dffda3cfdfc29",
+      "resultSha256": "487a2d5ec2bf68ffd39992d3119d3aaaf24339d6a225eb6580a02ebd0edafd60",
+      "file": "raw/phoenix-2026-08-18/12-00.json"
+    },
+    {
+      "time": "13:00",
+      "timestamp": "2026-08-18T13:00:00-07:00",
+      "activityId": "f0d03e4e-4368-4eba-a640-7055e6445cec",
+      "requestSha256": "09bfbd8356b0eba33003669da0b89a0adb3eb49c9c09af87d518f591dfad22fd",
+      "resultSha256": "33352a29491c7d6d8aa40eaa5e1eb5212c24a4274fc01bc75469ce953753269c",
+      "file": "raw/phoenix-2026-08-18/13-00.json"
+    },
+    {
+      "time": "14:00",
+      "timestamp": "2026-08-18T14:00:00-07:00",
+      "activityId": "8471a7aa-e811-4854-b78a-cbdce47ea357",
+      "requestSha256": "03f90aceeba653b1b3e89c47419ca6e6361fdfb441620f0dcb2ae575dd77b7b3",
+      "resultSha256": "9b56ae24b467fd093713700a8cae6e71fec43b1e5614e6568008317d9d24e704",
+      "file": "raw/phoenix-2026-08-18/14-00.json"
+    },
+    {
+      "time": "15:00",
+      "timestamp": "2026-08-18T15:00:00-07:00",
+      "activityId": "b86dbe3a-b440-469d-95d2-d493c38d6702",
+      "requestSha256": "1f396d1992e613ae02e45ccefc6e92edc531f050f2356fec1118c7e550b377ba",
+      "resultSha256": "b44197e95d3d5a41c099101f42244bbb775e685df342fd9ec75b98fafce030b6",
+      "file": "raw/phoenix-2026-08-18/15-00.json"
+    },
+    {
+      "time": "16:00",
+      "timestamp": "2026-08-18T16:00:00-07:00",
+      "activityId": "d8f29f38-69ae-4b74-89f6-2110c8f19a9d",
+      "requestSha256": "f273717868fa818c44b9b382ea2f2dcd347f89273079edbdb7e1b07eea113336",
+      "resultSha256": "fab3ff52a9fa91feec23dfc71160e025a49a93ddff6a05b1c9e631e6db58a57f",
+      "file": "raw/phoenix-2026-08-18/16-00.json"
+    },
+    {
+      "time": "17:00",
+      "timestamp": "2026-08-18T17:00:00-07:00",
+      "activityId": "18774efa-851f-4115-a283-30a360db08d8",
+      "requestSha256": "a82b88106841d2064d627c39288adba674d89580d57395ca8d835cbfeb11786b",
+      "resultSha256": "1754a4e8278017f02351676b3c7e8e837ce34baccab572eb636c2541f0e496c5",
+      "file": "raw/phoenix-2026-08-18/17-00.json"
+    },
+    {
+      "time": "18:00",
+      "timestamp": "2026-08-18T18:00:00-07:00",
+      "activityId": "f273d4b2-e1b4-4619-99e9-3ae31f2b64ca",
+      "requestSha256": "4a318e9e6d14bb0d06c2d920f8ec7cf2fa063f3c1e55a354e5ba49c9a635fa8d",
+      "resultSha256": "153bfe74d117dec7a288da63aa976f696c2f9e1094adad807228f7801a33eefc",
+      "file": "raw/phoenix-2026-08-18/18-00.json"
+    },
+    {
+      "time": "19:00",
+      "timestamp": "2026-08-18T19:00:00-07:00",
+      "activityId": "3e41b5bf-34f9-4a48-ad6b-230b0d45e0f0",
+      "requestSha256": "f4c765e5a3034c740cfe90b3570b52fbf21d274bdd3ee355824ce202a21cb263",
+      "resultSha256": "0a6f84b183fb1b02d1d6979a71f4f84dd84368bab08096046790ea8b92ca8ef5",
+      "file": "raw/phoenix-2026-08-18/19-00.json"
+    },
+    {
+      "time": "20:00",
+      "timestamp": "2026-08-18T20:00:00-07:00",
+      "activityId": "00b44ea5-0543-48bd-9db5-e791d9494292",
+      "requestSha256": "06768d31fd59769be7b48b49c92ec805f5b49831b93d9d8a84e08b9a0b39a468",
+      "resultSha256": "fd0cceacd28d4ec248106cae13104a1c17b3f9e637bad0375f7d992bd37548c7",
+      "file": "raw/phoenix-2026-08-18/20-00.json"
+    }
+  ]
+}

@@ -17,6 +17,8 @@ export interface ThermalLocation {
   areaLabel: string;
   latitude: number;
   longitude: number;
+  /** Optional provider-neutral polygon footprint in latitude/longitude order. */
+  footprint?: Array<{ latitude: number; longitude: number }>;
   samples: ThermalSample[];
   /** Optional domain-known adjacency. The engine falls back to nearest locations. */
   neighborIds?: string[];
@@ -30,6 +32,9 @@ export interface ThermalCohort {
   source: {
     label: string;
     kind: "synthetic" | "fortyguard" | "other";
+    snapshotId?: string;
+    granularityM?: number;
+    capturedAt?: string;
   };
   /** The comparison threshold used for persistence and excess degree-hours. */
   thresholdC: number;

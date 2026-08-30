@@ -52,3 +52,25 @@ This is a factual running log, not a polished narrative. Product and architectur
   scout request, and safe unconfigured-provider response. Browser automation
   was attempted twice but the runtime has neither its expected CLI nor a browser
   binary; this remains a named pre-submission gate.
+
+## 2026-08-30
+
+- Verified the real provider submission and status envelopes and extended the
+  adapter without exposing the API key.
+- Captured eleven sequential hourly 100 m Phoenix heatmaps (10:00–20:00), each
+  containing 42 stable returned polygons.
+- Added resumable capture tooling, immutable sanitized raw snapshots, activity
+  provenance, and SHA-256 request/result hashes.
+- Added a strict response mapper that joins by `tile_id`, rejects footprint or
+  schema drift, and produces a ten-location spatially distributed cohort.
+- Made Observed mode the default, retained a visible synthetic Demo fallback,
+  rendered returned footprints, and aligned the scout endpoint to the active
+  cohort.
+- Reached 73 passing tests with clean lint, strict TypeScript, and production
+  build. HTTP smoke
+  confirmed the observed page and grounded observed-cohort scout response.
+- In-app browser verification was attempted, but no browser backend was
+  registered in the workspace; final click/mobile/accessibility QA remains open.
+- Added an in-site metric field guide covering Heat Pressure, all six card
+  ratings, supporting raw evidence, percentile behavior, active provenance, and
+  scientific claim boundaries.

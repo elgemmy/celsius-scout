@@ -1,4 +1,4 @@
-# Start here tomorrow
+# Start here
 
 ## The 30-second reset
 
@@ -23,8 +23,7 @@ keeps the exact same interaction runnable.
 ## First 20 minutes
 
 ```bash
-git switch prototype/celsius-scout-core
-npm install
+npm ci
 npm run check
 npm run dev
 ```
@@ -50,18 +49,23 @@ Then open `http://localhost:3000` and run these in order:
 - Numeric-grounding rejection for LLM explanations.
 - Strict FortyGuard request validation, safe server-side key use, normalized
   async status, bounded polling, temporary 404 tolerance, and 429 handling.
-- A polished responsive shell with synthetic labeling and an offline path.
+- Eleven captured FortyGuard hourly layers with stable 100 m tile IDs, exact
+  returned polygon footprints, request/result hashes, and a strict mapper.
+- A polished responsive shell that defaults to observed data and visibly
+  switches to the labeled synthetic offline fallback.
 - Automated test, lint, type-check, and production-build gates.
 
 ## What is deliberately not claimed
 
-- The Phoenix fixture is not FortyGuard-observed data.
+- The Demo-mode Phoenix fixture is not FortyGuard-observed data.
+- The Observed mode is one pinned historical snapshot, not live conditions or a
+  forecast.
 - Heat Pressure is not a health, safety, or universal quality score.
 - Surprise is not statistical significance.
-- The UI does not yet import arbitrary completed FortyGuard GeoJSON into a
-  cohort. Exact returned property names must be captured and verified first.
-- No caching layer, user accounts, arbitrary map drawing, forecasts, or Premium
-  segmentation dependencies are part of the core.
+- The mapper accepts the captured hourly heatmap schema; it is not an arbitrary
+  GeoJSON importer.
+- No general live-request cache, user accounts, arbitrary map drawing,
+  forecasts, or Premium segmentation dependencies are part of the core.
 
 ## File tour
 
@@ -74,6 +78,8 @@ Then open `http://localhost:3000` and run these in order:
 | Scout tools | `lib/scouting.ts` | Evidence-rich rankings, comparisons, inspection |
 | Average story | `lib/average-insight.ts` | Broad mean versus full local distribution |
 | Demo data | `lib/demo-data.ts` | Labeled synthetic Phoenix fixture |
+| Observed snapshot | `data/fortyguard/` | Immutable raw responses and hash manifest |
+| Mapper | `server/fortyguard-mapper.ts` | Strict hourly response-to-cohort boundary |
 | Agent | `server/scout-agent.ts` | Deterministic routing and optional LLM tool loop |
 | Grounding | `server/grounding.ts` | Unsupported-number rejection |
 | FortyGuard | `server/fortyguard-provider.ts` | Server-only API boundary and polling |
@@ -81,11 +87,7 @@ Then open `http://localhost:3000` and run these in order:
 
 ## Highest-value next move
 
-Use a real hackathon key once, submit a small 100 m U.S. heatmap request, save a
-redacted completed response, and implement a tested provider-response mapper
-into `ThermalCohort`. Audition Phoenix, Manhattan, and Chicago lakefront areas,
-then lock one visually strong historical snapshot. Do not spend the first day
-adding more UI surfaces.
-
-After the snapshot is locked, record the final three-minute demo, deploy the
-core branch, and only then decide whether Festival Tetris earns one short cameo.
+Run the critical desktop/mobile/accessibility flow in a real browser, deploy the
+core, and record the final three-minute demo. Only audition another area if the
+captured Phoenix variation proves illegible in that visual pass; do not spend
+credits or time adding more UI surfaces by default.

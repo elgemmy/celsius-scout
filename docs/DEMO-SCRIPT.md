@@ -5,7 +5,8 @@
 “A city average gives you one number. Celsius Scout asks a better question:
 what kind of thermal player is each location?”
 
-Point out the active cohort, time window, threshold, and synthetic-preview label.
+Point out the Observed Snapshot label, 100 m resolution, historical time window,
+and the Demo fallback switch.
 
 ## 0:25–1:00 — thermal fraud
 

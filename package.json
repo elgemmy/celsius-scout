@@ -12,6 +12,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "capture:fortyguard": "node scripts/capture-fortyguard-snapshot.mjs",
     "check": "npm run lint && npm run typecheck && npm run test && npm run build"
   },
   "dependencies": {
