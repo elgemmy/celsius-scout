@@ -284,10 +284,12 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, summary:focus-vis
   box-shadow: var(--shadow);
 }
 
-.map-underlay { position: absolute; inset: 0; width: 100%; height: 100%; }
-.map-road { fill: none; stroke: #4a4034; stroke-width: 14; opacity: .35; }
-.map-road-wide { stroke-width: 22; }
-.map-water { fill: none; stroke: #3d5d58; stroke-width: 28; opacity: .28; }
+.map-photo, .map-underlay { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.map-photo { opacity: .92; }
+.map-underlay { pointer-events: none; }
+.map-grid-line { fill: none; stroke: rgba(247, 241, 230, .18); stroke-width: 1.2; }
+.map-canal { fill: none; stroke: #5aa7a0; stroke-width: 14; opacity: .45; }
+.map-park { fill: #3f6b46; opacity: .22; }
 .map-plots { position: absolute; inset: 0; }
 
 .map-plot {
@@ -308,9 +310,10 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, summary:focus-vis
   width: 100%;
   height: 100%;
   padding: 7px;
-  border-radius: 5px;
+  border-radius: 7px;
   color: #fff8ee;
   box-shadow: inset 0 -24px 28px rgba(0,0,0,.18);
+  opacity: .78;
 }
 
 .map-plot--cool .plot-face { background: #1f7a76; }
@@ -327,6 +330,7 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, summary:focus-vis
   outline-offset: 2px;
   box-shadow: 0 0 0 4px rgba(201, 161, 91, .28);
   filter: none;
+  opacity: .95;
 }
 
 .map-plot.is-inspected .plot-face::after {
@@ -389,38 +393,52 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, summary:focus-vis
   color: var(--ink-soft);
 }
 
+.combine-story {
+  padding: 10px 18px 12px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: rgba(255,255,255,.42);
+}
+
+.combine-story p:not(.kicker) {
+  max-width: 92ch;
+  margin: 4px 0 0;
+  font-size: .95rem;
+  line-height: 1.45;
+}
+
 .scout-card {
   --card-accent: var(--gold);
   position: relative;
   isolation: isolate;
-  width: min(100%, 420px);
+  width: min(100%, 400px);
   margin: 0 auto;
-  padding: 18px 18px 14px;
+  padding: 14px 14px 12px;
   overflow: hidden;
-  border-radius: 22px;
+  border-radius: 28px 28px 42px 42px;
   color: var(--cream);
   background:
-    radial-gradient(circle at 88% 8%, color-mix(in srgb, var(--card-accent) 38%, transparent), transparent 34%),
-    linear-gradient(165deg, #2a231c 0%, var(--card) 46%, #120f0c 100%);
-  border: 3px solid var(--gold);
+    radial-gradient(circle at 50% 18%, color-mix(in srgb, var(--card-accent) 34%, transparent), transparent 42%),
+    linear-gradient(180deg, #3b3124 0%, #1b1611 48%, #120e0b 100%);
+  border: 4px solid #e1c36a;
   box-shadow: 0 28px 54px rgba(22, 19, 15, .38);
   animation: deal .42s ease;
 }
 
-.scout-card.is-synthetic { border-color: #9aa3a0; }
-
-.card-foil {
+.scout-card::before {
+  content: "";
   position: absolute;
-  inset: 8px;
-  border: 1px solid rgba(247, 241, 230, .16);
-  border-radius: 16px;
+  inset: 7px;
+  border-radius: 22px 22px 34px 34px;
+  border: 1.5px solid rgba(225, 195, 106, .55);
   pointer-events: none;
-  background: repeating-linear-gradient(118deg, transparent 0 18px, rgba(201,161,91,.16) 19px, transparent 22px);
-  mix-blend-mode: screen;
-  opacity: .45;
+  z-index: 2;
 }
 
-.card-top, .card-identity, .card-stats, .card-footer, .card-hp-note, .card-curve-meta, .card-portrait {
+.scout-card.is-synthetic { border-color: #b9c4c0; }
+.scout-card.is-synthetic::before { border-color: rgba(185, 196, 192, .5); }
+
+.card-top, .card-identity, .fifa-stats, .card-footer, .card-portrait, .card-pitch {
   position: relative;
   z-index: 1;
 }
@@ -477,14 +495,31 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, summary:focus-vis
 
 .card-portrait {
   position: relative;
-  height: 168px;
-  margin: 12px 0 0;
+  height: 176px;
+  margin: 10px 4px 0;
   overflow: hidden;
-  border-radius: 16px;
+  border-radius: 18px;
   background: #120e0b;
 }
 
-.sparkline { display: block; width: 100%; height: 100%; }
+.card-portrait img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 18%;
+}
+
+.sparkline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: block;
+  width: 100%;
+  height: 58px;
+  opacity: .88;
+}
 
 .card-code {
   position: absolute;
@@ -509,7 +544,7 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, summary:focus-vis
 .card-identity h2 {
   margin: 4px 0 0;
   font-family: var(--font-display), Georgia, serif;
-  font-size: 2rem;
+  font-size: 1.55rem;
   font-style: italic;
   font-weight: 600;
   letter-spacing: -.04em;
@@ -527,42 +562,50 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, summary:focus-vis
   font-size: .78rem;
 }
 
-.card-stats {
+.fifa-stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-top: 12px;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 22px;
+  margin: 12px 8px 0;
 }
 
-.card-stats > div {
+.fifa-stats > div {
   display: grid;
   grid-template-columns: auto 1fr;
   align-items: baseline;
-  gap: 2px 8px;
-  padding: 8px;
-  border-radius: 12px;
-  background: rgba(255,255,255,.04);
+  column-gap: 8px;
+  padding: 4px 0 6px;
+  border-bottom: 1px solid rgba(247, 241, 230, .1);
 }
 
-.card-stats strong {
-  font-size: 1.15rem;
+.fifa-stats strong {
+  font-size: 1.35rem;
   letter-spacing: -.04em;
 }
 
-.card-stats span {
-  color: #d8c7a4;
-  font: 700 .72rem/1 var(--font-mono), ui-monospace, monospace;
+.fifa-stats span {
+  color: #e1c36a;
+  font: 700 .78rem/1 var(--font-mono), ui-monospace, monospace;
 }
 
-.card-stats small {
+.fifa-stats small {
   grid-column: 1 / -1;
-  color: #b7aaa0;
+  color: #cbbba8;
   font-size: .72rem;
 }
 
-.card-stats .is-void strong,
-.card-stats .is-void span,
-.card-stats .is-void small { color: #8d8378; }
+.fifa-stats .is-void strong,
+.fifa-stats .is-void span,
+.fifa-stats .is-void small { color: #8d8378; }
+
+.card-pitch {
+  position: relative;
+  z-index: 1;
+  margin: 10px 8px 0;
+  color: #d9cbb8;
+  font-size: .86rem;
+  line-height: 1.4;
+}
 
 .card-footer {
   display: flex;

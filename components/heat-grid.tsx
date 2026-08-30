@@ -2,6 +2,7 @@ export interface MapLocation {
   id: string;
   code?: string;
   name: string;
+  alias?: string;
   temperatureC: number;
   heatPressure?: number;
   x: number;
@@ -36,6 +37,9 @@ export function HeatGrid({ locations, selectedIds, inspectedId, onSelect }: Heat
   return (
     <div className="map-stack">
     <div className="thermal-map" aria-label="Interactive thermal scouting map">
+      {/* Decorative city underlay; tiles remain the interactive layer. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img className="map-photo" src="/maps/phoenix-combine.jpg" alt="" />
       <svg
         className="map-underlay"
         viewBox="0 0 760 570"
@@ -45,15 +49,15 @@ export function HeatGrid({ locations, selectedIds, inspectedId, onSelect }: Heat
       >
         <title id="map-title">Relative peak-rank map of the active Celsius Scout cohort</title>
         <desc id="map-description">
-          {locations.length} selectable tiles. Fill color is relative peak rank inside this cohort
+          {locations.length} selectable tiles over a stylized city underlay. Fill color is relative peak rank inside this cohort
           {uniformPeaks ? ", not a broad Celsius scale. Absolute peaks in this snapshot are nearly uniform." : "."}
         </desc>
-        <rect width="760" height="570" rx="28" fill="#2a241c" />
-        <path d="M-20 92 C140 42 247 138 421 86 S671 70 790 27" className="map-road map-road-wide" />
-        <path d="M128 -15 C142 105 96 202 153 305 S229 443 204 600" className="map-road" />
-        <path d="M467 -20 C426 124 506 220 477 341 S419 479 463 600" className="map-road" />
-        <path d="M-30 405 C155 374 260 452 400 408 S636 342 790 386" className="map-road" />
-        <path d="M620 -30 C666 97 639 197 681 290 S741 421 702 600" className="map-water" />
+        {Array.from({ length: 9 }, (_, index) => (
+          <path key={`v-${index}`} d={`M${80 + index * 75} 0 V570`} className="map-grid-line" />
+        ))}
+        {Array.from({ length: 7 }, (_, index) => (
+          <path key={`h-${index}`} d={`M0 ${70 + index * 72} H760`} className="map-grid-line" />
+        ))}
       </svg>
 
       <div className="map-plots">
@@ -74,7 +78,7 @@ export function HeatGrid({ locations, selectedIds, inspectedId, onSelect }: Heat
               }}
               onClick={() => onSelect(location.id)}
               aria-pressed={selected || inspected}
-              aria-label={`${location.name}, ${location.temperatureC.toFixed(temperaturePrecision)} degrees Celsius peak${hp == null ? "" : `, Heat Pressure ${hp}`}, ${TONE_LABELS[location.tone]}`}
+              aria-label={`${location.alias ?? location.name}, ${location.temperatureC.toFixed(temperaturePrecision)} degrees Celsius peak${hp == null ? "" : `, Heat Pressure ${hp}`}, ${TONE_LABELS[location.tone]}`}
             >
               <span className="plot-face" style={{ clipPath: location.clipPath }}>
                 <span className="plot-id">{location.code ?? location.id}</span>
@@ -82,7 +86,7 @@ export function HeatGrid({ locations, selectedIds, inspectedId, onSelect }: Heat
               </span>
               {selected ? (
                 <span className="plot-plate" aria-hidden="true">
-                  {location.code ?? location.name}
+                  {location.alias ?? location.code ?? location.name}
                 </span>
               ) : null}
             </button>

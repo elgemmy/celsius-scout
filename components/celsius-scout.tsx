@@ -13,6 +13,7 @@ import {
   type ScoutedLocation,
   type ThermalCohort,
 } from "../lib";
+import { demoStory, personaFor, snapshotStory } from "../lib/scout-lore";
 import { HeatGrid, type MapLocation } from "./heat-grid";
 
 type MetricKey = "peak" | "stamina" | "recovery" | "comfort" | "chaos" | "surprise";
@@ -20,6 +21,10 @@ type EvidenceFact = { label: string; value: string };
 
 interface ScoutLocation extends MapLocation {
   label: string;
+  alias: string;
+  epithet: string;
+  pitch: string;
+  portrait?: string;
   archetype: string;
   number: string;
   accent: string;
@@ -175,11 +180,16 @@ function toViewLocation(
   const signedDeviation = features.localDeviationC === null
     ? "Unavailable"
     : `${features.localDeviationC >= 0 ? "+" : ""}${decimal(features.localDeviationC)}°C`;
+  const persona = personaFor(location.id);
 
   return {
     id: location.id,
     code: codeFor(location),
     name: location.name,
+    alias: persona?.alias ?? location.name,
+    epithet: persona?.epithet ?? location.archetype.name.replace(/^The /, ""),
+    pitch: persona?.pitch ?? location.archetype.summary,
+    portrait: persona?.portrait,
     label: location.tags?.[0]?.replaceAll("-", " ") ?? location.areaLabel,
     archetype: location.archetype.name,
     number: String(index + 1).padStart(2, "0"),
@@ -359,13 +369,13 @@ function Sparkline({ values, accent }: { values: number[]; accent: string }) {
 
 function ScoutCard({ location, thresholdC }: { location: ScoutLocation; thresholdC: number }) {
   const isSnapshot = location.dataBadge === "SNAPSHOT";
+  const stats = metricsFor(thresholdC);
   return (
     <article
       className={`scout-card${isSnapshot ? " is-snapshot" : " is-synthetic"}`}
       style={{ "--card-accent": location.accent } as CSSProperties}
-      aria-label={`${location.name} thermal player card`}
+      aria-label={`${location.alias} thermal player card`}
     >
-      <div className="card-foil" aria-hidden="true" />
       <header className="card-top">
         <div className="card-overall">
           <strong>{location.heatPressure}</strong>
@@ -373,24 +383,24 @@ function ScoutCard({ location, thresholdC }: { location: ScoutLocation; threshol
         </div>
         <div className="card-meta">
           <span className="card-edition">{location.dataBadge}</span>
-          <span className="card-pos">{location.archetype.replace(/^The /, "")}</span>
+          <span className="card-pos">{location.epithet}</span>
         </div>
       </header>
-      <p className="card-hp-note">Heat Pressure · relative to this cohort</p>
       <div className="card-portrait">
+        {location.portrait ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={location.portrait} alt="" />
+        ) : null}
         <Sparkline values={location.sparkline} accent={location.accent} />
         <span className="card-code">{location.code}</span>
       </div>
       <div className="card-identity">
-        <p>{location.label}</p>
-        <h2>{location.code ? `Tile ${location.code}` : location.name}</h2>
-        <small>{location.name}</small>
+        <p>{location.archetype}</p>
+        <h2>{location.alias}</h2>
+        <small>{location.name} · {location.startTime}–{location.endTime} · {location.temperatureLabel}° at {location.peakTime}</small>
       </div>
-      <p className="card-curve-meta">
-        {location.startTime}–{location.endTime} · {location.temperatureLabel}° peak at {location.peakTime}
-      </p>
-      <div className="card-stats">
-        {metricsFor(thresholdC).map((metric) => {
+      <div className="fifa-stats">
+        {stats.map((metric) => {
           const value = location.metrics[metric.key];
           const unavailable = value.percentile === null;
           return (
@@ -406,6 +416,7 @@ function ScoutCard({ location, thresholdC }: { location: ScoutLocation; threshol
           );
         })}
       </div>
+      <p className="card-pitch">{location.pitch}</p>
       <footer className="card-footer">
         <span>Ratings = in-cohort percentiles</span>
         <strong>{isSnapshot ? "FortyGuard snapshot" : "Synthetic demo"}</strong>
@@ -571,6 +582,11 @@ export function CelsiusScout({ cohorts }: { cohorts: ThermalCohort[] }) {
         </div>
       </header>
 
+      <section className="combine-story">
+        <p className="kicker">The Phoenix Combine</p>
+        <p>{isObserved ? snapshotStory : demoStory}</p>
+      </section>
+
       <section className="context-bar" aria-label="Active comparison cohort">
         <span className={`mode-pill${isObserved ? " is-snapshot" : " is-demo"}`}>
           {isObserved ? "Historical Snapshot" : "Synthetic Demo"}
@@ -629,7 +645,7 @@ export function CelsiusScout({ cohorts }: { cohorts: ThermalCohort[] }) {
             </div>
           </header>
           <ScoutCard key={selectedLocation.id} location={selectedLocation} thresholdC={analysis.cohort.thresholdC} />
-          <p className="card-read">{selectedLocation.evidence}</p>
+          <p className="card-read">{selectedLocation.pitch} {selectedLocation.evidence}</p>
         </div>
       </section>
 
