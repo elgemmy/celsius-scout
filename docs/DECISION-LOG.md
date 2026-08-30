@@ -127,3 +127,14 @@ without separating users from the board.
 **Why:** Live provider responses and incomplete spatial series must fail visibly
 or remain unavailable. Silent fallback to demo-shaped assumptions would make a
  working interface look more reliable than its evidence.
+
+## 2026-08-30 — Submission UI as a thermal scouting desk
+
+**Decision:** Restyle the product on `grok/submission-ui-rework` as a warm
+editorial desk with a FIFA-like player card, a two-column map/card workspace,
+mission tabs, and a receding methodology drawer. Keep lime rare. State that map
+color is relative peak rank. Do not change formulas, snapshots, or routes.
+
+**Why:** The hardened core already scouts; the previous dark dashboard hid the
+collectible metaphor and overstated tiny Observed differences with neon heat
+maps.
