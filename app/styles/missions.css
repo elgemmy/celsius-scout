@@ -1,1 +1,186 @@
 /* Mission rail overrides: tickets, ask box, brief list. */
+
+.mission-rail .section-heading h2 {
+  margin: 8px 0 0;
+  font-size: clamp(1.15rem, 1.6vw, 1.4rem);
+  letter-spacing: -.04em;
+}
+
+.mission-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  margin-top: 18px;
+}
+
+.mission-button {
+  width: 100%;
+  min-height: 52px;
+  display: grid;
+  grid-template-columns: 2.15rem 1fr;
+  align-items: center;
+  gap: 0;
+  padding: 9px 12px 9px 0;
+  border: 1px solid var(--line);
+  border-radius: 3px 10px 10px 3px;
+  color: var(--ink);
+  background: rgba(255, 255, 255, .03);
+  text-align: left;
+  cursor: pointer;
+  transition: background .18s ease, border-color .18s ease, color .18s ease;
+}
+
+.mission-button:hover {
+  border-color: rgba(217, 255, 90, .28);
+  background: rgba(255, 255, 255, .055);
+  transform: none;
+}
+
+.mission-button.is-active {
+  border-color: var(--lime);
+  color: var(--ink-dark);
+  background: var(--lime);
+}
+
+.mission-number {
+  display: grid;
+  place-items: center;
+  align-self: stretch;
+  color: var(--muted);
+  border-right: 1px dashed rgba(226, 240, 235, .22);
+  font: 700 .68rem/1 var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .06em;
+}
+
+.mission-button.is-active .mission-number {
+  color: var(--ink-dark);
+  border-right-color: color-mix(in srgb, var(--ink-dark) 32%, transparent);
+}
+
+.mission-button > span:nth-child(2) {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding-left: 11px;
+}
+
+.mission-button small {
+  color: var(--teal);
+  font: 700 .7rem/1 var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.mission-button.is-active small {
+  color: color-mix(in srgb, var(--ink-dark) 72%, #3d5520);
+}
+
+.mission-button strong {
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -.03em;
+  line-height: 1.15;
+}
+
+.ask-scout {
+  display: grid;
+  gap: 7px;
+  margin-top: 16px;
+  padding: 13px 0 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+}
+
+.ask-scout label {
+  color: #b7c4c1;
+  font: 600 .78rem/1.2 var(--font-sans), Inter, ui-sans-serif, sans-serif;
+  letter-spacing: -.01em;
+  text-transform: none;
+}
+
+.ask-scout textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 56px;
+  padding: 8px 9px;
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 6px;
+  color: #d5e0dc;
+  background:
+    repeating-linear-gradient(
+      transparent 0 19px,
+      rgba(226, 240, 235, .05) 19px 20px
+    ),
+    rgba(255, 255, 255, .03);
+  font-size: .68rem;
+  line-height: 1.45;
+}
+
+.ask-scout textarea:focus {
+  outline: 2px solid var(--lime);
+  outline-offset: 2px;
+}
+
+.ask-scout button {
+  width: fit-content;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 5px;
+  color: var(--ink-dark);
+  background: var(--lime);
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .02em;
+  cursor: pointer;
+}
+
+.ask-scout button:disabled {
+  opacity: .5;
+  cursor: wait;
+}
+
+.ask-scout > p {
+  margin: 0;
+  color: #ff9a73;
+  font-size: .62rem;
+  line-height: 1.4;
+}
+
+.mission-note {
+  display: block;
+  margin-top: auto;
+  padding-top: 16px;
+  color: var(--muted);
+  font: 500 .62rem/1.35 var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .01em;
+}
+
+.mission-note > span,
+.mission-note p,
+.mission-note strong {
+  color: inherit;
+  font: inherit;
+}
+
+@media (max-width: 820px) {
+  .mission-note {
+    padding-top: 14px;
+  }
+}
+
+@media (max-width: 520px) {
+  .mission-list {
+    grid-template-columns: 1fr;
+  }
+
+  .mission-button {
+    min-height: 44px;
+    grid-template-columns: 2.15rem 1fr;
+  }
+
+  .mission-number {
+    display: grid;
+  }
+}
