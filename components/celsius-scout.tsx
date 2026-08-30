@@ -15,6 +15,7 @@ import {
 } from "../lib";
 import { demoStory, personaFor, snapshotStory } from "../lib/scout-lore";
 import { HeatGrid, type MapLocation } from "./heat-grid";
+import { ScoutReply } from "./scout-reply";
 
 type MetricKey = "peak" | "stamina" | "recovery" | "comfort" | "chaos" | "surprise";
 type EvidenceFact = { label: string; value: string };
@@ -653,7 +654,7 @@ export function CelsiusScout({ cohorts }: { cohorts: ThermalCohort[] }) {
             <span className={`report-badge${agentReport ? "" : " is-quiet"}`}>{reportBadge}</span>
           </div>
           <h2 className="report-prompt">{reportQuestion}</h2>
-          <p className="report-answer">{reportExplanation}</p>
+          <ScoutReply text={reportExplanation} />
           {selectedNames.length > 1 ? (
             <div className="selection-strip" aria-label="Selected locations">
               {selectedNames.map((name) => <span key={name}>{name}</span>)}

@@ -284,6 +284,8 @@ async function requestModel(
         "Use at least one registered tool before answering.",
         "Calculations and rankings come only from tools. You may analyze, compare, and explain their outputs.",
         "Every number in the final answer must occur verbatim in returned tool evidence.",
+        "Write 2 to 4 short prose paragraphs. Do not use emoji, markdown headings, or bullet dumps of tool JSON.",
+        "You may bold a location name with **double asterisks**. Do not ask follow-up questions.",
         "Make descriptive observations, never causal, medical, safety, or statistical-significance claims.",
         `Active ${analysis.cohort.source.kind} cohort: ${analysis.cohort.name}. Location ids: ${locationIds.join(", ")}.`,
       ].join(" "),

@@ -736,12 +736,25 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, summary:focus-vis
   line-height: 1.4;
 }
 
-.report-answer {
+.report-answer,
+.scout-reply {
   max-width: 62ch;
   margin: 10px 0 0;
   color: var(--ink);
   font-size: 1.05rem;
   line-height: 1.55;
+}
+
+.scout-reply p { margin: 0 0 0.8em; }
+.scout-reply p:last-child { margin-bottom: 0; }
+.scout-reply ul {
+  margin: 0 0 0.8em;
+  padding-left: 1.15em;
+}
+.scout-reply li { margin: 0.25em 0; }
+.scout-reply code {
+  font: 650 .92em/1.4 var(--font-mono), ui-monospace, monospace;
+  color: #145c58;
 }
 
 .report-facts {
