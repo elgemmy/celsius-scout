@@ -1,7 +1,15 @@
 import { NextResponse } from "next/server";
 import { createFortyGuardProvider, toSafeRouteError } from "@/server/fortyguard-provider";
+import { authorizeFortyGuardCapture } from "@/server/fortyguard-capture-auth";
 
-export async function GET(_request: Request, context: { params: Promise<{ activityId: string }> }) {
+export async function GET(request: Request, context: { params: Promise<{ activityId: string }> }) {
+  const authorization = authorizeFortyGuardCapture(request);
+  if (!authorization.authorized) {
+    return NextResponse.json(
+      { error: authorization.message },
+      { status: authorization.status, headers: { "cache-control": "no-store" } },
+    );
+  }
   try {
     const { activityId } = await context.params;
     const status = await createFortyGuardProvider().getActivityStatus(activityId);

@@ -34,7 +34,7 @@ The heatmap endpoint accepts a GeoJSON polygon, date/time filter, granularity, a
 - `direction`: above or below
 - `threshold`: defaults to 30°C
 
-Completed statistics include minimum, maximum, mean, standard deviation, a sorted distribution, normal-curve plot data, and histogram frequencies. Individual GeoJSON property names are not completely documented, so the live adapter must be built and tested against captured responses.
+Completed statistics include minimum, maximum, mean, standard deviation, a sorted distribution, normal-curve plot data, and histogram frequencies. Individual GeoJSON property names are not completely documented, so the implemented adapter is tested against the captured response contract and fails closed on schema drift.
 
 ### Geography, time, and resolution
 
@@ -48,7 +48,9 @@ Completed statistics include minimum, maximum, mean, standard deviation, a sorte
 - The current endpoint documentation accepts dates from 2019 onward. Keep a
   real-key boundary test in the final integration pass in case provider policy
   differs from the published contract.
-- Avoid multi-day filter type 4 in the MVP because the endpoint page and limitations page disagree.
+- Filter type 4 is implemented against the endpoint contract, with a maximum
+  31-day range. The pinned demo still uses time-specific filter type 1 captures
+  because they preserve hourly order.
 
 ### Async and failure behavior
 

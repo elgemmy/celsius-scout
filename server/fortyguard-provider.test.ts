@@ -113,6 +113,7 @@ describe("heatmap request validation", () => {
     ],
     ["a range without an end date", { dateTime: { filterType: 4, startDate: "2026-07-15" } }],
     ["a backwards date range", { dateTime: { filterType: 4, startDate: "2026-07-15", endDate: "2026-07-14" } }],
+    ["a 32-calendar-day range", { dateTime: { filterType: 4, startDate: "2026-07-01", endDate: "2026-08-01" } }],
     ["a date range longer than 31 days", { dateTime: { filterType: 4, startDate: "2026-07-01", endDate: "2026-08-02" } }],
     ["a pre-2019 date", { dateTime: { filterType: 3, startDate: "2018-12-31" } }],
     ["an impossible calendar date", { dateTime: { filterType: 3, startDate: "2026-02-30" } }],

@@ -8,7 +8,7 @@ archetypes, comparisons, lineups, and Average Is Lying summary. An optional LLM
 agent can choose those tools and explain their evidence; it never owns the
 displayed calculations.
 
-The default experience is fully offline and uses an immutable, provenance-hashed
+The default experience is fully offline and uses a checked-in, hash-verified
 FortyGuard snapshot: eleven hourly 100 m layers over a small Central Phoenix
 area. A visible switch retains the conspicuously labeled synthetic cohort as a
 deterministic fallback. Server-side routes can safely capture a replacement
@@ -43,12 +43,15 @@ This runs ESLint, strict TypeScript, all Vitest suites, and a production build.
 
 Copy `.env.example` to `.env.local`. Never prefix these keys with `NEXT_PUBLIC_`.
 
-- `FORTYGUARD_API_KEY`: enables the server-only heatmap/status routes.
+- `FORTYGUARD_API_KEY`: provider credential used only on the server.
+- `FORTYGUARD_CAPTURE_TOKEN`: protects the operator-only heatmap/status routes;
+  leaving it empty disables them.
 - `FORTYGUARD_API_BASE_URL`: optional compatible endpoint override.
 - `OPENAI_API_KEY` and `OPENAI_MODEL`: enable LLM planning/explanation.
 
-With the development server running, `npm run capture:fortyguard` reuses any
-completed hourly files and only submits missing layers for the pinned snapshot.
+With the development server running and the same `FORTYGUARD_CAPTURE_TOKEN` in
+both processes, `npm run capture:fortyguard` reuses any completed hourly files
+and only submits missing layers for the pinned snapshot.
 
 ## What to read next
 

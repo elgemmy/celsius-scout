@@ -3,6 +3,8 @@ import { createHash } from "node:crypto";
 import path from "node:path";
 
 const baseUrl = process.env.CELSIUS_SCOUT_URL ?? "http://localhost:3000";
+const captureToken = process.env.FORTYGUARD_CAPTURE_TOKEN;
+if (!captureToken) throw new Error("FORTYGUARD_CAPTURE_TOKEN is required to use operator capture routes");
 const date = "2026-08-18";
 const times = Array.from({ length: 11 }, (_, index) => `${String(index + 10).padStart(2, "0")}:00`);
 const outputDirectory = path.join(process.cwd(), "data", "fortyguard", "raw", `phoenix-${date}`);
@@ -41,7 +43,10 @@ function captureRequest(time) {
 }
 
 async function requestJson(relativePath, init) {
-  const response = await fetch(new URL(relativePath, baseUrl), init);
+  const response = await fetch(new URL(relativePath, baseUrl), {
+    ...init,
+    headers: { ...init?.headers, authorization: `Bearer ${captureToken}` },
+  });
   const payload = await response.json().catch(() => null);
   if (!response.ok) {
     throw new Error(`${relativePath} failed with HTTP ${response.status}: ${JSON.stringify(payload)}`);

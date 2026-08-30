@@ -26,8 +26,9 @@ const TONE_LABELS: Record<MapLocation["tone"], string> = {
 };
 
 export function HeatGrid({ locations, selectedIds, onSelect }: HeatGridProps) {
-  const minimum = Math.min(...locations.map((location) => location.temperatureC));
-  const maximum = Math.max(...locations.map((location) => location.temperatureC));
+  const peakRange = Math.max(...locations.map((location) => location.temperatureC)) -
+    Math.min(...locations.map((location) => location.temperatureC));
+  const temperaturePrecision = peakRange < 0.1 ? 2 : 1;
   return (
     <div className="thermal-map" aria-label="Interactive thermal scouting map">
       <svg
@@ -76,19 +77,19 @@ export function HeatGrid({ locations, selectedIds, onSelect }: HeatGridProps) {
               }}
               onClick={() => onSelect(location.id)}
               aria-pressed={selected}
-              aria-label={`${location.name}, ${location.temperatureC.toFixed(1)} degrees Celsius peak, ${TONE_LABELS[location.tone]} band`}
+              aria-label={`${location.name}, ${location.temperatureC.toFixed(temperaturePrecision)} degrees Celsius peak, ${TONE_LABELS[location.tone]} relative peak-rank band`}
             >
               <span className="plot-id">{location.code ?? location.id}</span>
-              <strong>{location.temperatureC.toFixed(1)}°</strong>
+              <strong>{location.temperatureC.toFixed(temperaturePrecision)}°</strong>
             </button>
           );
         })}
       </div>
 
-      <div className="map-legend" aria-label="Peak temperature legend">
-        <span>{minimum.toFixed(1)}°C</span>
+      <div className="map-legend" aria-label="Relative peak-rank legend">
+        <span>Lower peak rank</span>
         <i aria-hidden="true" />
-        <span>{maximum.toFixed(1)}°C</span>
+        <span>Higher peak rank</span>
       </div>
     </div>
   );

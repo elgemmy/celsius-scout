@@ -290,7 +290,7 @@ function validateDateTime(value: unknown, issues: string[]): value is FortyGuard
   if (validDate && validEndDate) {
     const durationDays = (dateAsUtcMs(value.endDate as string) - dateAsUtcMs(value.startDate as string)) / 86_400_000;
     if (durationDays < 0) issues.push("dateTime.endDate must not be earlier than dateTime.startDate");
-    if (durationDays > 31) issues.push("dateTime range must not exceed one month (31 days)");
+    if (durationDays >= 31) issues.push("dateTime range must not exceed 31 inclusive calendar days");
   }
   return validDate && validEndDate;
 }

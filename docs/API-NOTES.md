@@ -17,9 +17,12 @@ The API is asynchronous: submission returns an activity ID, then the status endp
 
 ## Prototype policy
 
-- Default to the local deterministic fixture.
+- Default to the checked-in, hash-verified historical snapshot; retain the
+  clearly labeled deterministic synthetic fixture as a fallback.
 - Use 100 m granularity and a small polygon while iterating.
 - Never log API keys or signed report URLs.
+- Keep capture and status routes operator-only with
+  `FORTYGUARD_CAPTURE_TOKEN`; leaving it unset disables them.
 - Cache completed results by a canonical request hash before adding repeated live demos.
 - Null environmental values mean unavailable, not zero.
 

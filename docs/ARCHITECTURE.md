@@ -27,16 +27,17 @@ structured results → map + thermal cards + evidence report
 
 ## Data modes
 
-The application starts from the immutable Central Phoenix FortyGuard snapshot:
+The application starts from the checked-in Central Phoenix FortyGuard snapshot:
 eleven time-specific 100 m heatmaps joined by stable `tile_id`. It selects ten
 spatially distributed returned polygons for the focused scouting cohort. The
-Observed/Demo control switches to the synthetic Phoenix fixture without network
+Snapshot/Demo control switches to the synthetic Phoenix fixture without network
 access. Both modes use the same domain engine and carry explicit provenance.
 
 The raw sanitized provider results live separately from derived cohort data.
-The capture manifest records activity IDs plus SHA-256 request/result hashes.
-The capture script skips completed files, but the public live request routes do
-not yet provide a general cache.
+The capture manifest records activity IDs plus SHA-256 capture/result hashes,
+which an automated test recomputes. The capture script skips completed files.
+Live capture/status routes require an operator token and are disabled when it is
+unset, but they do not yet provide a general request cache.
 
 ## Agent modes
 

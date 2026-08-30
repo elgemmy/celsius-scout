@@ -2,12 +2,18 @@
 
 ## Current technical limits
 
-- Observed mode is a pinned August 18, 2026 Central Phoenix historical snapshot,
-  not current conditions or a forecast. Demo mode remains synthetic.
+- Snapshot mode is a pinned August 18, 2026 Central Phoenix historical TCM
+  capture, not current conditions or a forecast. Demo mode remains synthetic.
+- The captured area is unusually uniform: selected time-weighted means span
+  only about 0.030°C and every captured sample exceeds the 38°C threshold. It
+  proves the real provider path but is not a strong spatial-contrast showcase.
 - The versioned mapper supports the verified hourly heatmap response contract;
   unrecognized provider schema changes fail closed.
-- The immutable snapshot capture is hashed and reused, but arbitrary live route
-  requests have no general canonical-request cache and could spend credits.
+- The snapshot capture is hash-verified and reused. Live capture/status routes
+  require `FORTYGUARD_CAPTURE_TOKEN` and are disabled when it is unset, but they
+  still have no general canonical-request cache.
+- Surprise uses the nearest three locations among ten spatially distributed
+  samples selected from 42 returned tiles. It is not full-grid adjacency.
 - Observed tiles use returned FortyGuard polygons over a stylized underlay; the
   underlay is not a street-accurate basemap.
 - The optional LLM route is covered with mocked responses; no configured model
@@ -38,6 +44,7 @@
 
 ## Production hardening after the hackathon
 
-Add schema migration support, a general live-request cache, a geographic
-basemap, robust recovery estimator, broader agent evaluation set, accessibility
-review with a real browser, and monitoring for provider and model latency/cost.
+Capture a wider or more heterogeneous validated cohort; add schema migration
+support, a general live-request cache, explicit full-grid neighbor topology, a
+geographic basemap, robust recovery estimator, broader agent evaluation set,
+accessibility review with a real browser, and provider/model monitoring.

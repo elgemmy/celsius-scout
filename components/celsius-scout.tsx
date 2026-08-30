@@ -34,6 +34,7 @@ interface ScoutLocation extends MapLocation {
   sparkline: number[];
   evidence: string;
   dataBadge: string;
+  temperatureLabel: string;
 }
 
 interface Mission {
@@ -72,7 +73,8 @@ const ARCHETYPE_ACCENTS: Record<string, string> = {
 };
 
 function decimal(value: number): string {
-  return value.toFixed(1);
+  const places = Math.abs(value) > 0 && Math.abs(value) < 0.1 ? 3 : 1;
+  return Number(value.toFixed(places)).toFixed(places);
 }
 
 function duration(value: number | null): string {
@@ -161,6 +163,8 @@ function toViewLocation(
 ): ScoutLocation {
   const { features, scores } = location;
   const geometry = mapGeometry(location, bounds);
+  const peakValues = analysis.locations.map((candidate) => candidate.features.peakTemperatureC);
+  const peakPrecision = Math.max(...peakValues) - Math.min(...peakValues) < 0.1 ? 2 : 1;
   const signedDeviation = features.localDeviationC === null
     ? "Unavailable"
     : `${features.localDeviationC >= 0 ? "+" : ""}${decimal(features.localDeviationC)}°C`;
@@ -191,7 +195,8 @@ function toViewLocation(
     },
     sparkline: location.samples.map((sample) => sample.temperatureC),
     evidence: `${location.archetype.summary} ${location.archetype.reasons.map((reason) => `${reason.label}: ${reason.value}${reason.unit ? ` ${reason.unit}` : ""}`).join(" · ")}.`,
-    dataBadge: analysis.cohort.source.kind === "fortyguard" ? "OBSERVED" : "SYNTHETIC",
+    dataBadge: analysis.cohort.source.kind === "fortyguard" ? "SNAPSHOT" : "SYNTHETIC",
+    temperatureLabel: features.peakTemperatureC.toFixed(peakPrecision),
     ...geometry,
     tone: mapTone(scores.peak),
   };
@@ -206,7 +211,8 @@ function agentLocationIds(report: AgentReport | null, locationById: Map<string, 
   const addLocation = (value: unknown) => {
     if (isRecord(value) && typeof value.id === "string" && locationById.has(value.id)) ids.add(value.id);
   };
-  for (const entry of report?.trace ?? []) {
+  const finalEntry = report?.trace.at(-1);
+  for (const entry of finalEntry ? [finalEntry] : []) {
     const data = entry.result.data;
     if (Array.isArray(data)) data.forEach((item) => isRecord(item) && addLocation(item.location));
     if (isRecord(data)) {
@@ -222,7 +228,9 @@ function missionsFor(analysis: CelsiusScoutAnalysis): Mission[] {
   const coolest = findCoolestLineup(analysis, 5);
   const fraud = findBiggestThermalFraud(analysis);
   const twins = findSimilarAverageDifferentBehaviorPair(analysis);
-  const recovery = findFastestRecovery(analysis);
+  const recovery = analysis.locations.some((location) => location.features.recoveryRateCPerHour !== null)
+    ? findFastestRecovery(analysis)
+    : null;
   return [
   {
     id: "coolest-five",
@@ -266,7 +274,7 @@ function missionsFor(analysis: CelsiusScoutAnalysis): Mission[] {
       { label: "Behavior gap", value: `${decimal(twins.data.behaviorDistance)} percentile pts` },
     ],
   },
-  {
+  ...(recovery ? [{
     id: "fastest-recovery",
     kicker: "Find",
     title: "Fastest recovery",
@@ -279,7 +287,7 @@ function missionsFor(analysis: CelsiusScoutAnalysis): Mission[] {
       { label: "Recovery", value: `${decimal(recovery.data.location.features.recoveryRateCPerHour as number)}°C / h` },
       { label: "Measured window", value: duration(recovery.data.location.features.recoveryWindowHours) },
     ],
-  },
+  }] : []),
   ];
 }
 
@@ -342,9 +350,9 @@ function ScoutCard({ location, thresholdC }: { location: ScoutLocation; threshol
       <div className="card-pressure-label">HEAT PRESSURE · RELATIVE TO COHORT</div>
       <div className="card-portrait" aria-hidden="true"><span className="sun-disc" /><svg viewBox="0 0 320 155" preserveAspectRatio="none"><path d="M0 138 42 84l39 31 41-73 42 76 47-55 37 41 40-72 32 50v73H0Z" fill="currentColor" opacity=".18" /><path d="M-10 138c62-29 103-19 161 2s113 10 179-23v48H-10Z" fill="currentColor" opacity=".32" /></svg><span className="card-location-code">{location.code}</span></div>
       <div className="card-identity"><p>{location.label}</p><h2>{location.name}</h2><span>{location.archetype}</span></div>
-      <div className="card-spark"><div className="spark-meta"><span>{location.startTime}</span><strong>{location.temperatureC.toFixed(1)}° peak · {location.peakTime}</strong><span>{location.endTime}</span></div><Sparkline values={location.sparkline} accent={location.accent} /></div>
+      <div className="card-spark"><div className="spark-meta"><span>{location.startTime}</span><strong>{location.temperatureLabel}° peak · {location.peakTime}</strong><span>{location.endTime}</span></div><Sparkline values={location.sparkline} accent={location.accent} /></div>
       <div className="card-stats">{metricsFor(thresholdC).map((metric) => { const value = location.metrics[metric.key]; return <div key={metric.key} aria-label={`${metric.label}: ${value.percentile === null ? "unavailable" : `percentile ${value.percentile}`}; ${value.raw}. ${metric.hint}`}><strong>{value.percentile === null ? "—" : value.percentile}</strong><span>{metric.label}</span><small>{value.raw}</small></div>; })}</div>
-      <footer className="card-footer"><span>Ratings = cohort percentiles</span><strong>FORTYGUARD × CELSIUS SCOUT</strong></footer>
+      <footer className="card-footer"><span>Ratings = cohort percentiles</span><strong>{location.dataBadge === "SNAPSHOT" ? "FORTYGUARD × CELSIUS SCOUT" : "SYNTHETIC DEMO × CELSIUS SCOUT"}</strong></footer>
     </article>
   );
 }
@@ -361,12 +369,12 @@ function RatingsGuide({ analysis }: { analysis: CelsiusScoutAnalysis }) {
       </header>
       <div className="ratings-guide-grid">
         <article><span className="guide-code">HP</span><h3>Heat Pressure</h3><p><strong>50% Peak percentile + 50% Stamina percentile.</strong> A compact description of relative thermal intensity—not comfort, danger, health risk, or overall quality.</p></article>
-        <article><span className="guide-code">PEAK</span><h3>Peak</h3><p>The highest observed air temperature in the active time series. The raw value is °C; a higher rating means a higher maximum relative to this cohort.</p></article>
+        <article><span className="guide-code">PEAK</span><h3>Peak</h3><p>The highest captured temperature in the active time series. The raw value is °C; a higher rating means a higher maximum relative to this cohort.</p></article>
         <article><span className="guide-code">STA</span><h3>Stamina</h3><p>The longest uninterrupted, linearly interpolated run above <strong>{analysis.cohort.thresholdC}°C</strong>. It is duration, not temperature, and stays separate from total exceedance.</p></article>
         <article><span className="guide-code">REC</span><h3>Recovery</h3><p>The supported post-peak cooling trend from ordinary least squares, shown in °C/hour. A faster cooling trend earns a higher rating; insufficient post-peak samples produce “Unavailable.”</p></article>
         <article><span className="guide-code">COM</span><h3>Comfort</h3><p>A lower time-weighted apparent temperature earns a higher rating. It requires supplied apparent temperature or complete humidity-and-wind inputs. {comfortInput}</p></article>
         <article><span className="guide-code">CHA</span><h3>Chaos</h3><p>The interquartile range of successive changes in temperature-change rates. A higher rating means a more irregular profile, not randomness or measurement error.</p></article>
-        <article><span className="guide-code">SUR</span><h3>Surprise</h3><p>The size of a location’s median same-hour deviation from nearby tiles. The rating uses absolute size; the raw sign preserves direction: positive is hotter, negative is cooler.</p></article>
+        <article><span className="guide-code">SUR</span><h3>Surprise</h3><p>The size of a location’s median same-hour deviation from the nearest sampled cohort tiles. The rating uses absolute size; the raw sign preserves direction: positive is hotter, negative is cooler.</p></article>
         <article><span className="guide-code">RAW</span><h3>Supporting evidence</h3><p>Exceedance is total interpolated time above the threshold. Peak time is the earliest observed maximum. The time-weighted mean integrates the full series instead of averaging sample rows.</p></article>
       </div>
       <footer className="ratings-guide-notes">
@@ -399,6 +407,8 @@ export function CelsiusScout({ cohorts }: { cohorts: ThermalCohort[] }) {
     : manualSelection ? [selectedId] : activeMission.selectedIds;
   const selectedNames = selectedIds.map((id) => locationById.get(id)?.name).filter(Boolean) as string[];
   const isObserved = analysis.cohort.source.kind === "fortyguard";
+  const narrowSnapshotSpread = isObserved && averageMasking.spatialMeanRangeC < 0.1;
+  const spatialPrecision = averageMasking.spatialMeanRangeC < 0.1 ? 3 : 1;
   const windowDate = new Intl.DateTimeFormat("en-GB", {
     day: "numeric",
     month: "short",
@@ -411,7 +421,7 @@ export function CelsiusScout({ cohorts }: { cohorts: ThermalCohort[] }) {
   }));
   const visibleEvidence = agentEvidence ?? (manualSelection
     ? [
-      { label: "Peak", value: `${selectedLocation.temperatureC.toFixed(1)}°C · P${selectedLocation.metrics.peak.percentile}` },
+      { label: "Peak", value: `${selectedLocation.temperatureLabel}°C · P${selectedLocation.metrics.peak.percentile}` },
       { label: "Exceedance / longest", value: `${selectedLocation.exceedance} / ${selectedLocation.stamina}` },
       { label: "Recovery", value: selectedLocation.recoveryRate === null ? "Unavailable" : `${selectedLocation.recoveryRate.toFixed(1)}°C / h` },
     ]
@@ -470,7 +480,7 @@ export function CelsiusScout({ cohorts }: { cohorts: ThermalCohort[] }) {
     <main className="app-shell">
       <header className="site-header"><a className="wordmark" href="#top" aria-label="Celsius Scout home"><span className="wordmark-mark" aria-hidden="true"><i /><i /><i /></span><span>CELSIUS<strong>SCOUT</strong></span></a><div className="header-status"><span className="status-dot" aria-hidden="true" />Deterministic core · LLM-ready</div><a href="#how-it-works" className="text-link"><span className="text-link-label">How ratings work</span> <span aria-hidden="true">↗</span></a></header>
       <section className="intro" id="top"><div><p className="eyebrow">THERMAL INTELLIGENCE, SCOUTED</p><h1>Every block has a <em>thermal character.</em></h1></div><p className="intro-copy">Draft cool spots, expose deceptive averages, and inspect the evidence behind every pick. City heat, reimagined as a scouting board.</p></section>
-      <section className="cohort-bar" aria-label="Active comparison cohort"><div className="cohort-title"><span className={`demo-badge${isObserved ? " is-observed" : ""}`}>{isObserved ? "OBSERVED SNAPSHOT" : "SYNTHETIC PREVIEW"}</span><div><strong>{analysis.cohort.name}</strong><small>{analysis.cohort.source.label}</small></div></div><div className="cohort-controls" aria-label="Data mode">{cohorts.map((cohort) => <button key={cohort.id} type="button" className={cohort.id === analysis.cohort.id ? "is-active" : ""} onClick={() => switchCohort(cohort.id)} aria-pressed={cohort.id === analysis.cohort.id}>{cohort.source.kind === "fortyguard" ? "Observed" : "Demo"}</button>)}</div><div className="cohort-facts"><span><small>LOCATIONS</small><strong>{analysis.cohort.locationCount} local profiles</strong></span><span><small>WINDOW</small><strong>{windowDate} · {localTime(analysis.cohort.startTimestamp, analysis.cohort.timezone)}–{localTime(analysis.cohort.endTimestamp, analysis.cohort.timezone)}</strong></span><span><small>THRESHOLD</small><strong>Above {analysis.cohort.thresholdC}°C</strong></span><span><small>{isObserved ? "RESOLUTION" : "RATINGS"}</small><strong>{isObserved ? `${analysis.cohort.source.granularityM} m grid` : "Percentile in this cohort"}</strong></span></div></section>
+      <section className="cohort-bar" aria-label="Active comparison cohort"><div className="cohort-title"><span className={`demo-badge${isObserved ? " is-observed" : ""}`}>{isObserved ? "HISTORICAL SNAPSHOT" : "SYNTHETIC PREVIEW"}</span><div><strong>{analysis.cohort.name}</strong><small>{analysis.cohort.source.label}</small></div></div><div className="cohort-controls" aria-label="Data mode">{cohorts.map((cohort) => <button key={cohort.id} type="button" className={cohort.id === analysis.cohort.id ? "is-active" : ""} onClick={() => switchCohort(cohort.id)} aria-pressed={cohort.id === analysis.cohort.id}>{cohort.source.kind === "fortyguard" ? "Snapshot" : "Demo"}</button>)}</div><div className="cohort-facts"><span><small>LOCATIONS</small><strong>{analysis.cohort.locationCount} local profiles</strong></span><span><small>WINDOW</small><strong>{windowDate} · {localTime(analysis.cohort.startTimestamp, analysis.cohort.timezone)}–{localTime(analysis.cohort.endTimestamp, analysis.cohort.timezone)}</strong></span><span><small>THRESHOLD</small><strong>Above {analysis.cohort.thresholdC}°C</strong></span><span><small>{isObserved ? "RESOLUTION" : "RATINGS"}</small><strong>{isObserved ? `${analysis.cohort.source.granularityM} m grid` : "Percentile in this cohort"}</strong></span></div></section>
 
       <section className="scout-workspace" aria-label="Celsius Scout workspace">
         <aside className="mission-rail">
@@ -500,9 +510,9 @@ export function CelsiusScout({ cohorts }: { cohorts: ThermalCohort[] }) {
         <div className="tool-trace"><div className="trace-heading"><span className="trace-pulse" aria-hidden="true" /><strong>Executed tool{agentReport && agentReport.trace.length > 1 ? "s" : ""}</strong><small>structured result</small></div><ol>{(agentReport?.trace.map((entry) => entry.tool) ?? [inspection?.tool ?? activeMission.tool]).map((tool, index) => <li key={`${tool}-${index}`}><span>{index + 1}</span><code>{tool}()</code></li>)}</ol></div>
       </section>
 
-      <section className="average-panel" aria-labelledby="average-title"><div className="average-intro"><p className="eyebrow">DERIVED EXPERIENCE / THE AVERAGE IS LYING</p><h2 id="average-title">One number hides the local spread.</h2><p>The broad cohort mean is {averageMasking.representativeMeanC.toFixed(1)}°C, but the local time-weighted means span {averageMasking.spatialMeanRangeC.toFixed(1)}°C. The scout keeps the distribution visible.</p></div><div className="average-stat"><span>Broad mean</span><strong>{averageMasking.representativeMeanC.toFixed(1)}°C</strong><small>mean of local time-weighted means</small></div><div className="average-stat"><span>Local range</span><strong>{averageMasking.coolestMeanC.toFixed(1)}–{averageMasking.hottestMeanC.toFixed(1)}°C</strong><small>{averageMasking.coolestLocation.name} → {averageMasking.hottestLocation.name}</small></div><div className="average-stat"><span>Exposure share</span><strong>{averageMasking.tileHoursAboveThresholdPercent.toFixed(1)}%</strong><small>of observed tile-hours above {analysis.cohort.thresholdC}°C</small></div></section>
+      <section className="average-panel" aria-labelledby="average-title"><div className="average-intro"><p className="eyebrow">DERIVED EXPERIENCE / THE AVERAGE IS LYING</p><h2 id="average-title">{narrowSnapshotSpread ? "This snapshot is nearly spatially uniform." : "One number hides the local spread."}</h2><p>{narrowSnapshotSpread ? `The selected tile means differ by only ${averageMasking.spatialMeanRangeC.toFixed(spatialPrecision)}°C. This proves the captured-data path, but it is not strong evidence of heterogeneous local heat.` : `The broad cohort mean is ${averageMasking.representativeMeanC.toFixed(1)}°C, but the local time-weighted means span ${averageMasking.spatialMeanRangeC.toFixed(spatialPrecision)}°C. The scout keeps the distribution visible.`}</p></div><div className="average-stat"><span>Broad mean</span><strong>{averageMasking.representativeMeanC.toFixed(spatialPrecision)}°C</strong><small>mean of local time-weighted means</small></div><div className="average-stat"><span>Local range</span><strong>{averageMasking.coolestMeanC.toFixed(spatialPrecision)}–{averageMasking.hottestMeanC.toFixed(spatialPrecision)}°C</strong><small>{averageMasking.coolestLocation.name} → {averageMasking.hottestLocation.name}</small></div><div className="average-stat"><span>Exposure share</span><strong>{averageMasking.tileHoursAboveThresholdPercent.toFixed(1)}%</strong><small>of captured tile-hours above {analysis.cohort.thresholdC}°C</small></div></section>
       <RatingsGuide analysis={analysis} />
-      <section className="method-strip"><p><strong>Data honesty:</strong> {isObserved ? `this view uses a captured FortyGuard historical snapshot (${analysis.cohort.source.snapshotId}); switch to Demo for the labeled synthetic fallback.` : "this view uses the labeled synthetic Phoenix fallback; switch to Observed for the captured FortyGuard snapshot."} Ratings are recomputed from the active cohort.</p><p><strong>Interpretation:</strong> Heat Pressure is 50% Peak plus 50% Stamina. Surprise is local deviation, not statistical significance. These are comparison tools—not health, safety, or causal claims.</p></section>
+      <section className="method-strip"><p><strong>Data honesty:</strong> {isObserved ? `this view uses a captured FortyGuard historical TCM snapshot (${analysis.cohort.source.snapshotId}); switch to Demo for the labeled synthetic fallback.` : "this view uses the labeled synthetic Phoenix fallback; switch to Snapshot for the captured FortyGuard data."} Ratings are recomputed from the active cohort.</p><p><strong>Interpretation:</strong> Heat Pressure is 50% Peak plus 50% Stamina. Surprise compares the nearest sampled cohort tiles; it is not statistical significance. These are comparison tools—not health, safety, or causal claims.</p></section>
     </main>
   );
 }

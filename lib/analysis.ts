@@ -120,7 +120,7 @@ export function analyzeCohort(
       "Comfort is scored only when every sample has provided apparent temperature or enough humidity and wind data for the BOM shade formula.",
       "Recovery is a post-peak linear-regression cooling slope and is unavailable without two observations after the peak.",
       "Chaos is the IQR of successive changes in interval temperature-change rates, reducing sensitivity to isolated extremes while distinguishing irregular swings from a smooth daily arc.",
-      "Local deviation is the median signed difference from same-timestamp neighbor medians; explicit neighbors are preferred, otherwise the three nearest locations are used.",
+      "Local deviation is the median signed difference from same-timestamp neighbor medians; explicit neighbors are preferred, otherwise the three nearest sampled cohort locations are used.",
       "Heat Pressure is 50% cohort-relative Peak plus 50% cohort-relative Stamina; it is not a health or safety score.",
     ],
   };

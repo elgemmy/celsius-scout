@@ -18,10 +18,10 @@ The normalizer validates ranges and IANA timezone metadata, sorts samples,
 rejects duplicate instants, requires a shared observation window for fair
 cohort scores, and does not mutate its input.
 
-The bundled Phoenix cohort is synthetic and deliberately shaped for the demo.
-It is not observed FortyGuard data. It has ten fictional locations and eleven
-hourly observations per location, including all six specialist archetypes and a
-fallback profile.
+The default Phoenix cohort is mapped from eleven captured FortyGuard historical
+TCM layers. A separate synthetic Phoenix fixture remains available behind the
+Demo switch; it has ten fictional locations and is deliberately shaped to cover
+the specialist archetypes and fallback profile.
 
 ## Raw features
 
@@ -109,8 +109,10 @@ differences across the window:
 At least two matching neighbors at every location timestamp are required.
 Partial timestamp coverage is not silently scored: otherwise the feature and
 Surprise score are `null`. Explicit `neighborIds` are preferred. If absent, the
-engine deterministically chooses the three nearest cohort locations by local
-coordinate distance, breaking ties by location id.
+engine deterministically chooses the three nearest locations in the sampled
+cohort by local coordinate distance, breaking ties by location id. The current
+captured board contains ten spatially distributed samples selected from 42
+returned tiles, so this fallback must not be described as full-grid adjacency.
 
 This is called a local deviation, not a statistically significant anomaly.
 
