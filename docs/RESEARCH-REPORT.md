@@ -45,7 +45,9 @@ Completed statistics include minimum, maximum, mean, standard deviation, a sorte
 - Data is hourly.
 - Same-day ranges can span at most 23 hours.
 - Forecasts extend up to 12 hours.
-- Documentation conflicts on the historical start year. Use 2021 or later until a real-key test proves otherwise.
+- The current endpoint documentation accepts dates from 2019 onward. Keep a
+  real-key boundary test in the final integration pass in case provider policy
+  differs from the published contract.
 - Avoid multi-day filter type 4 in the MVP because the endpoint page and limitations page disagree.
 
 ### Async and failure behavior

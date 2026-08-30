@@ -1,6 +1,6 @@
 # FortyGuard API notes
 
-Source reviewed: official FortyGuard API documentation on 25 August 2026.
+Source reviewed: official FortyGuard API documentation on 29 August 2026.
 
 ## Useful endpoints
 
