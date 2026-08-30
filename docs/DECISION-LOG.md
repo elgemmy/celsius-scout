@@ -140,3 +140,14 @@ URL. Empty values fall back to OpenAI.
 **Why:** The existing tool-call, numeric-grounding, and fallback contract is
 Responses-shaped. Judges can plug any compatible key, model, and URL without a
 client rewrite. Chat Completions-only hosts are out of scope.
+
+## 2026-08-30 — Submission UI as a thermal scouting desk
+
+**Decision:** Ship the Combine UI on `main`: warm editorial desk, FIFA-like
+player cards, cartoon scout personas, two-column map/card workspace, mission
+tabs, and a receding methodology drawer. Map tiles share the card suit color.
+Do not change formulas, snapshots, or routes.
+
+**Why:** The hardened core already scouts; the previous dark dashboard hid the
+collectible metaphor and overstated tiny Observed differences with neon heat
+maps.
