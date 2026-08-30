@@ -72,19 +72,7 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, summary:focus-vis
 .brand {
   display: flex;
   align-items: center;
-  gap: 12px;
   text-decoration: none;
-}
-
-.brand-mark {
-  width: 42px;
-  height: 42px;
-  display: grid;
-  place-items: center;
-  border-radius: 12px;
-  background: var(--midnight);
-  color: var(--gold);
-  font: 700 .9rem/1 var(--font-display), Georgia, serif;
 }
 
 .brand-copy {

@@ -1,5 +1,8 @@
 # Celsius Scout handoff report
 
+Judge-facing written summary: [`docs/SUBMISSION.md`](SUBMISSION.md).
+This file is internal status, not the hackathon write-up.
+
 ## Outcome
 
 The corrected Celsius Scout concept is now the repository's single product

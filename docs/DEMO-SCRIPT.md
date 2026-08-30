@@ -1,15 +1,27 @@
 # Demo video script (3:30–4:00)
 
-Fits the 2–5 minute submission video. Record at 1080p with the pointer visible.
+FortyGuard submission video for **Celsius Scout** on `main`
+([github.com/elgemmy/celsius-scout](https://github.com/elgemmy/celsius-scout)).
+Fits the required 2–5 minute recording. Record at 1080p with the pointer visible.
 
-**Setup:** `git checkout main && git pull origin main && npm run dev`  
-Open `http://localhost:3000`, Historical Snapshot on, hard-refresh, map zoom **1×** so all ten tiles show. Do not open How ratings work until the close.
+**Show, in this order:** wordmark **Celsius Scout**, **The Phoenix Combine**,
+**Historical Snapshot**, mission tabs, FIFA player card, **Ask the Scout**,
+**The Average Is Lying**. Stay on the flagship board.
+
+**Setup:** `git checkout main && git pull origin main && npm ci && npm run dev`  
+Open `http://localhost:3000`, **Historical Snapshot** on, hard-refresh, map zoom
+**1×** so all ten tiles show. Leave **How ratings work** closed.
+
+Missions on the bar (do not need all of them): Thermal fraud, Different twins,
+Coolest five, Fastest recovery.
 
 ## 0:00–0:25 — Hook
 
 **VO:** “A city average gives you one number. Celsius Scout asks a better question: what kind of thermal *player* is each block?”
 
-**Camera:** Title, **Historical Snapshot**, window **18 Aug · 10:00–20:00**, **100 m**, **10 profiles**, threshold **38°C**.
+**Camera:** Wordmark **Celsius Scout** (text only). Mode **Historical Snapshot**.
+Context bar: window **18 Aug · 10:00–20:00**, **10 profiles**, threshold **38°C**,
+grid **100 m**.
 
 **VO:** “This is not live weather. It’s a pinned FortyGuard capture. The tiles are real 100-metre polygons. The city picture underneath is a stage.”
 
@@ -17,19 +29,24 @@ Open `http://localhost:3000`, Historical Snapshot on, hard-refresh, map zoom **1
 
 **VO:** “We call it the Phoenix Combine. On this day almost every tile ran the same marathon. Peaks sit within a tenth of a degree. We’re not hunting a rainforest. We’re hunting a *tell*.”
 
-**Camera:** Slow scroll-zoom on the map, hover a couple of tiles, land on **041 / Peak Captain**.
+**Camera:** Slow scroll-zoom on the map, hover a couple of tiles, land on
+**041 / Peak Captain**.
 
-## 0:50–1:25 — Thermal fraud
+## 0:50–1:25 — Thermal fraud + FIFA card
 
 **Click:** mission **Thermal fraud**.
 
 **VO:** “Fraud here means the average hides the peak — not that the data is fake.”
 
-**Camera:** Card (HP, sparkline, PEK / STA). Pan to **Scout report**: peak-to-mean gap **0.782°C**, peak **41.901°C**, mean **41.119°C**, tool `find_biggest_thermal_fraud()`.
+**Camera:** FIFA player card — SNAPSHOT edition, Heat Pressure, cartoon portrait,
+sparkline, then PEK / STA / REC / COM / CHA / SUR (Comfort is Unavailable on
+this temperature-only snapshot). Pan to **Scout report**: on-screen facts round
+to one decimal (**41.9°C** peak, **41.1°C** mean, **0.8°C** peak − mean). Engine
+values are 41.901 / 41.119 / 0.782. Executed tool `find_biggest_thermal_fraud()`.
 
 ## 1:25–1:55 — Different twins
 
-**Click:** **Different twins**. Click each highlighted tile so the card swaps.
+**Click:** **Different twins**. Click each highlighted tile so the FIFA card swaps.
 
 **VO:** “Similar means, different players. Persistence, recovery, chaos, and peak time change the story.”
 
@@ -62,3 +79,4 @@ Hold on map + Peak Captain. Cut.
 - Don’t call the aerial photo “satellite.”
 - If Comfort is “Unavailable,” that’s correct (temperature-only snapshot).
 - Target **1080p**, pointer visible, no music under the numbers.
+- A human still has to record and upload the file; this document is the script.

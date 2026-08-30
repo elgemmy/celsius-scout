@@ -141,6 +141,16 @@ URL. Empty values fall back to OpenAI.
 Responses-shaped. Judges can plug any compatible key, model, and URL without a
 client rewrite. Chat Completions-only hosts are out of scope.
 
+## 2026-08-30 — Hackathon packet is the flagship on main
+
+**Decision:** Submit Celsius Scout on `main` as the Combine board plus
+judge-facing `docs/SUBMISSION.md`, `docs/API-NOTES.md`, and
+`docs/DEMO-SCRIPT.md`. Do not put Festival Tetris on the submission path.
+
+**Why:** FortyGuard asks for a working demo, a repo link, a 2–5 minute video, a
+written summary, and API usage notes. The flagship already contains Average Is
+Lying; extra branches dilute the story.
+
 ## 2026-08-30 — Submission UI as a thermal scouting desk
 
 **Decision:** Ship the Combine UI on `main`: warm editorial desk, FIFA-like

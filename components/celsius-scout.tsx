@@ -554,7 +554,6 @@ export function CelsiusScout({ cohorts }: { cohorts: ThermalCohort[] }) {
     <main className="desk" id="top">
       <header className="masthead">
         <a className="brand" href="#top" aria-label="Celsius Scout home">
-          <span className="brand-mark" aria-hidden="true">CS</span>
           <span className="brand-copy">
             <strong>Celsius Scout</strong>
             <small>Thermal player cards for city heat</small>
