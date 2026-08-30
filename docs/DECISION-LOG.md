@@ -161,3 +161,14 @@ Do not change formulas, snapshots, or routes.
 **Why:** The hardened core already scouts; the previous dark dashboard hid the
 collectible metaphor and overstated tiny Observed differences with neon heat
 maps.
+
+## 2026-08-30 — Silent grounded fallbacks, rounded numeric claims
+
+**Decision:** Do not render `fallbackReason` in the Ask-the-Scout report.
+Credential, model, and grounding fallbacks stay silent; only network/400
+failures surface as a short alert. Treat decimal claims as grounded when they
+round to or prefix an evidence number at the claimed precision (41.9 from
+41.901). Do not treat clock tokens like 15:00 as claims of 15.
+
+**Why:** Judges were seeing a correct answer plus orange
+`Rejected unsupported numerical claims` copy for ordinary rounding and times.

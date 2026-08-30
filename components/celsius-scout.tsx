@@ -58,7 +58,6 @@ interface AgentReport {
   mode: "deterministic" | "llm";
   question: string;
   explanation: string;
-  fallbackReason?: string;
   trace: Array<{
     tool: string;
     result: {
@@ -544,8 +543,11 @@ export function CelsiusScout({ cohorts }: { cohorts: ThermalCohort[] }) {
   }
 
   const inspection = manualSelection && !agentReport ? inspectLocation(analysis, selectedLocation.id) : null;
-  const reportTitle = agentReport
-    ? `${agentReport.mode === "llm" ? "Scout agent" : "Deterministic scout"}`
+  const reportQuestion = agentReport?.question ?? inspection?.question ?? activeMission.prompt;
+  const reportExplanation = agentReport?.explanation ?? (manualSelection ? selectedLocation.evidence : activeMission.result);
+  const reportTool = agentReport?.trace.at(-1)?.tool ?? inspection?.tool ?? activeMission.tool;
+  const reportBadge = agentReport
+    ? (agentReport.mode === "llm" ? "Scout reply" : "Scout reply · code")
     : manualSelection
       ? "Free inspection"
       : activeMission.title;
@@ -644,12 +646,14 @@ export function CelsiusScout({ cohorts }: { cohorts: ThermalCohort[] }) {
         </div>
       </section>
 
-      <section className="report" aria-live="polite">
+      <section className={`report${agentReport ? " is-reply" : ""}`} aria-live="polite">
         <div className="report-copy">
-          <p className="kicker">Scout report · {reportTitle}</p>
-          <h2>{agentReport?.question ?? inspection?.question ?? activeMission.prompt}</h2>
-          <p>{agentReport?.explanation ?? (manualSelection ? selectedLocation.evidence : activeMission.result)}</p>
-          {agentReport?.fallbackReason ? <p className="report-fallback">Fallback: {agentReport.fallbackReason}</p> : null}
+          <div className="report-head">
+            <p className="kicker">{agentReport ? "Ask the scout" : "Scout report"}</p>
+            <span className={`report-badge${agentReport ? "" : " is-quiet"}`}>{reportBadge}</span>
+          </div>
+          <h2 className="report-prompt">{reportQuestion}</h2>
+          <p className="report-answer">{reportExplanation}</p>
           {selectedNames.length > 1 ? (
             <div className="selection-strip" aria-label="Selected locations">
               {selectedNames.map((name) => <span key={name}>{name}</span>)}
@@ -664,10 +668,7 @@ export function CelsiusScout({ cohorts }: { cohorts: ThermalCohort[] }) {
             </div>
           ))}
         </div>
-        <p className="report-tool">
-          Executed tool{" "}
-          <code>{(agentReport?.trace.at(-1)?.tool ?? inspection?.tool ?? activeMission.tool) + "()"}</code>
-        </p>
+        <p className="report-tool">{reportTool}</p>
       </section>
 
       <section className="ask-panel" aria-labelledby="ask-title">
@@ -695,7 +696,7 @@ export function CelsiusScout({ cohorts }: { cohorts: ThermalCohort[] }) {
           <button type="submit" className="ask-submit" disabled={agentLoading || !question.trim()}>
             {agentLoading ? "Scouting…" : "Run brief"}
           </button>
-          {agentError ? <p role="alert">{agentError}</p> : null}
+          {agentError ? <p className="ask-alert" role="alert">{agentError}</p> : null}
         </form>
       </section>
 

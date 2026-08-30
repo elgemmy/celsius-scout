@@ -134,6 +134,49 @@ describe("Celsius Scout agent", () => {
     expect(result.grounding.grounded).toBe(true);
   });
 
+  it("accepts rounded model numbers that match evidence at the claimed precision", async () => {
+    const cohort = {
+      ...demoCohort,
+      id: "rounded-evidence",
+      locations: demoCohort.locations.map((location) =>
+        location.id === "comeback-park"
+          ? {
+              ...location,
+              samples: location.samples.map((sample, index) =>
+                index === 4 ? { ...sample, temperatureC: 41.901 } : sample,
+              ),
+            }
+          : location,
+      ),
+    };
+
+    const fetcher = vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        output: [{
+          type: "function_call",
+          name: "find_biggest_thermal_fraud",
+          call_id: "call_1",
+          arguments: "{}",
+        }],
+      }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        output_text: "Comeback Park peaks at 41.9°C around 15:00.",
+        output: [],
+      }), { status: 200 }));
+
+    const result = await runScoutAgent({
+      question: "Find the biggest thermal fraud.",
+      cohort,
+      apiKey: "test-key",
+      model: "test-model",
+      fetch: fetcher,
+    });
+
+    expect(result.mode).toBe("llm");
+    expect(result.grounding.grounded).toBe(true);
+    expect(result.fallbackReason).toBeUndefined();
+  });
+
   it.each([
     [undefined, "https://api.openai.com/v1/responses"],
     ["", "https://api.openai.com/v1/responses"],

@@ -13,10 +13,48 @@ function canonicalNumber(value: string | number): string | null {
   return String(Number(parsed.toFixed(6)));
 }
 
-export function extractNumbers(value: string): string[] {
+function decimalPlaces(token: string): number {
+  const match = /^-?\d+\.(\d+)$/.exec(token);
+  return match ? match[1].length : 0;
+}
+
+/** Integers inside clock times like 15:00 are not standalone numerical claims. */
+function isTimeComponent(match: RegExpMatchArray): boolean {
+  if (match[0].includes(".")) return false;
+  const input = match.input ?? "";
+  const index = match.index ?? 0;
+  const token = match[0];
+  const after = input.slice(index + token.length);
+  const before = input.slice(0, index);
+  return /^:\d{2}/.test(after) || before.endsWith(":");
+}
+
+function numberTokens(value: string): string[] {
   return [...value.matchAll(NUMBER_PATTERN)]
-    .map((match) => canonicalNumber(match[0]))
+    .filter((match) => !isTimeComponent(match))
+    .map((match) => match[0]);
+}
+
+export function extractNumbers(value: string): string[] {
+  return numberTokens(value)
+    .map((token) => canonicalNumber(token))
     .filter((number): number is string => number !== null);
+}
+
+function isSupportedClaim(token: string, evidenceNumbers: string[]): boolean {
+  const claim = canonicalNumber(token);
+  if (claim === null) return false;
+  if (evidenceNumbers.includes(claim)) return true;
+
+  const places = decimalPlaces(token);
+  if (places === 0) return false;
+
+  return evidenceNumbers.some((evidence) => {
+    const evidenceNumber = Number(evidence);
+    if (!Number.isFinite(evidenceNumber)) return false;
+    if (canonicalNumber(evidenceNumber.toFixed(places)) === claim) return true;
+    return evidence.startsWith(token);
+  });
 }
 
 export function collectEvidenceNumbers(evidence: unknown): string[] {
@@ -49,10 +87,19 @@ export function collectEvidenceNumbers(evidence: unknown): string[] {
 }
 
 export function validateNumericGrounding(explanation: string, evidence: unknown): GroundingResult {
-  const claimedNumbers = [...new Set(extractNumbers(explanation))];
+  const claimedTokens = numberTokens(explanation);
+  const claimedNumbers = [...new Set(
+    claimedTokens
+      .map((token) => canonicalNumber(token))
+      .filter((number): number is string => number !== null),
+  )];
   const evidenceNumbers = collectEvidenceNumbers(evidence);
-  const allowed = new Set(evidenceNumbers);
-  const unsupportedNumbers = claimedNumbers.filter((number) => !allowed.has(number));
+  const unsupportedNumbers = [...new Set(
+    claimedTokens
+      .filter((token) => !isSupportedClaim(token, evidenceNumbers))
+      .map((token) => canonicalNumber(token))
+      .filter((number): number is string => number !== null),
+  )];
 
   return {
     grounded: unsupportedNumbers.length === 0,
