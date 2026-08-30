@@ -15,7 +15,7 @@ import {
 } from "../lib";
 import { validateNumericGrounding, type GroundingResult } from "./grounding";
 
-const RESPONSES_URL = "https://api.openai.com/v1/responses";
+const DEFAULT_RESPONSES_BASE_URL = "https://api.openai.com/v1";
 const MAX_MODEL_TURNS = 3;
 const MAX_TOOL_CALLS = 4;
 
@@ -42,6 +42,7 @@ export interface ScoutAgentOptions {
   cohort?: ThermalCohort;
   apiKey?: string;
   model?: string;
+  baseUrl?: string;
   fetch?: FetchLike;
 }
 
@@ -252,15 +253,26 @@ function outputText(payload: ResponsesPayload): string | null {
   return null;
 }
 
+function firstNonEmpty(...values: Array<string | undefined>): string | undefined {
+  return values.find((value) => typeof value === "string" && value.trim().length > 0);
+}
+
+function responsesUrl(baseUrl?: string): string {
+  const raw = firstNonEmpty(baseUrl, process.env.OPENAI_BASE_URL) ?? DEFAULT_RESPONSES_BASE_URL;
+  const base = raw.trim().replace(/\/+$/, "");
+  return base.endsWith("/responses") ? base : `${base}/responses`;
+}
+
 async function requestModel(
   fetcher: FetchLike,
   apiKey: string,
   model: string,
   input: unknown[],
   analysis: CelsiusScoutAnalysis,
+  baseUrl?: string,
 ): Promise<ResponsesPayload> {
   const locationIds = analysis.locations.map((location) => location.id);
-  const response = await fetcher(RESPONSES_URL, {
+  const response = await fetcher(responsesUrl(baseUrl), {
     method: "POST",
     headers: { authorization: `Bearer ${apiKey}`, "content-type": "application/json" },
     body: JSON.stringify({
@@ -299,7 +311,7 @@ export async function runScoutAgent(options: ScoutAgentOptions): Promise<ScoutAg
 
   try {
     for (let turn = 0; turn < MAX_MODEL_TURNS; turn += 1) {
-      const payload = await requestModel(fetcher, apiKey, model, input, analysis);
+      const payload = await requestModel(fetcher, apiKey, model, input, analysis, options.baseUrl);
       const calls = functionCalls(payload.output);
       if (!calls.length) {
         const explanation = outputText(payload);

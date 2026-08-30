@@ -28,8 +28,10 @@ Open `http://localhost:3000`. Try a preset mission, select a map tile, then ask:
 > Find an underrated cool location.
 
 Without LLM credentials, the ask box uses the deterministic scout. With
-`OPENAI_API_KEY` and `OPENAI_MODEL`, it uses a strict function-calling loop and
-rejects unsupported numerical claims.
+`OPENAI_API_KEY`, `OPENAI_MODEL`, and optionally `OPENAI_BASE_URL`, it uses a
+strict Responses-API function-calling loop and rejects unsupported numerical
+claims. Any OpenAI-style Responses provider works (OpenAI, DeepSeek, xAI); Chat
+Completions-only endpoints will not.
 
 ## Verify
 
@@ -41,13 +43,12 @@ This runs ESLint, strict TypeScript, all Vitest suites, and a production build.
 
 ## Optional server configuration
 
-Copy `.env.example` to `.env.local`. Never prefix these keys with `NEXT_PUBLIC_`.
+Copy `.env.example` to `.env` or `.env.local`. Never prefix these keys with `NEXT_PUBLIC_`.
 
-- `FORTYGUARD_API_KEY`: provider credential used only on the server.
-- `FORTYGUARD_CAPTURE_TOKEN`: protects the operator-only heatmap/status routes;
-  leaving it empty disables them.
+- `OPENAI_API_KEY`, `OPENAI_MODEL`, `OPENAI_BASE_URL`: plug any Responses-API provider. Defaults to `https://api.openai.com/v1` if the URL is omitted. Restart the server after changing these.
+- `FORTYGUARD_API_KEY`: provider credential used only on the server. The scouting board already ships an Observed Phoenix snapshot; a live key does not swap the UI onto a new city.
+- `FORTYGUARD_CAPTURE_TOKEN`: protects the operator-only heatmap/status routes; leaving it empty disables them.
 - `FORTYGUARD_API_BASE_URL`: optional compatible endpoint override.
-- `OPENAI_API_KEY` and `OPENAI_MODEL`: enable LLM planning/explanation.
 
 With the development server running and the same `FORTYGUARD_CAPTURE_TOKEN` in
 both processes, `npm run capture:fortyguard` reuses any completed hourly files

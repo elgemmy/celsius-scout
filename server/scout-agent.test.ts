@@ -133,4 +133,34 @@ describe("Celsius Scout agent", () => {
     expect(result.fallbackReason).toContain("777");
     expect(result.grounding.grounded).toBe(true);
   });
+
+  it.each([
+    [undefined, "https://api.openai.com/v1/responses"],
+    ["", "https://api.openai.com/v1/responses"],
+    ["https://api.openai.com/v1", "https://api.openai.com/v1/responses"],
+    ["https://api.openai.com/v1/", "https://api.openai.com/v1/responses"],
+    ["https://api.openai.com/v1/responses", "https://api.openai.com/v1/responses"],
+    ["https://api.deepseek.com", "https://api.deepseek.com/responses"],
+    ["https://api.x.ai/v1", "https://api.x.ai/v1/responses"],
+  ])("posts to the OpenAI-compatible Responses URL for base %s", async (baseUrl, expected) => {
+    const previous = process.env.OPENAI_BASE_URL;
+    delete process.env.OPENAI_BASE_URL;
+    const fetcher = vi.fn().mockResolvedValue(new Response(JSON.stringify({ output: [] }), { status: 200 }));
+
+    try {
+      await runScoutAgent({
+        question: "Who recovers fastest?",
+        apiKey: "test-key",
+        model: "provider-model",
+        ...(baseUrl === undefined ? {} : { baseUrl }),
+        fetch: fetcher,
+      });
+    } finally {
+      if (previous === undefined) delete process.env.OPENAI_BASE_URL;
+      else process.env.OPENAI_BASE_URL = previous;
+    }
+
+    expect(fetcher).toHaveBeenCalled();
+    expect(String(fetcher.mock.calls[0][0])).toBe(expected);
+  });
 });

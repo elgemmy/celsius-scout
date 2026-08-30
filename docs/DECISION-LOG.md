@@ -127,3 +127,16 @@ without separating users from the board.
 **Why:** Live provider responses and incomplete spatial series must fail visibly
 or remain unavailable. Silent fallback to demo-shaped assumptions would make a
  working interface look more reliable than its evidence.
+
+## 2026-08-30 — OpenAI-compatible Responses endpoint, not Chat Completions
+
+**Decision:** Keep the scout LLM client on the OpenAI Responses API
+(`POST {base}/responses` with function tools). Make the base URL configurable
+via `OPENAI_BASE_URL` so OpenAI (`https://api.openai.com/v1`), DeepSeek
+(`https://api.deepseek.com`), and xAI (`https://api.x.ai/v1`) can share the
+same loop. Accept an SDK-style base, a trailing slash, or a full `/responses`
+URL. Empty values fall back to OpenAI.
+
+**Why:** The existing tool-call, numeric-grounding, and fallback contract is
+Responses-shaped. Judges can plug any compatible key, model, and URL without a
+client rewrite. Chat Completions-only hosts are out of scope.
