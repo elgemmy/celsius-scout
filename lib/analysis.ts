@@ -36,17 +36,29 @@ function resolveNeighbors(location: ThermalLocation, locations: ThermalLocation[
 function sameHourNeighborDeviations(
   location: ThermalLocation,
   neighbors: ThermalLocation[],
-): number[] {
+): { deviations: number[]; neighborCount: number } {
   const neighborSeries = neighbors.map(
     (neighbor) => new Map(neighbor.samples.map((sample) => [toEpochMs(sample.timestamp), sample.temperatureC])),
   );
-  return location.samples.flatMap((sample) => {
+  const comparisons = location.samples.map((sample) => {
     const timestamp = toEpochMs(sample.timestamp);
     const values = neighborSeries
       .map((series) => series.get(timestamp))
       .filter((value): value is number => value !== undefined);
-    return values.length >= 2 ? [sample.temperatureC - median(values)] : [];
+    return {
+      deviation: values.length >= 2 ? sample.temperatureC - median(values) : null,
+      neighborCount: values.length,
+    };
   });
+
+  const neighborCount = Math.min(...comparisons.map((comparison) => comparison.neighborCount));
+  const completeCoverage = comparisons.every((comparison) => comparison.deviation !== null);
+  return {
+    deviations: completeCoverage
+      ? comparisons.map((comparison) => comparison.deviation as number)
+      : [],
+    neighborCount,
+  };
 }
 
 export interface AnalysisOptions {
@@ -66,10 +78,11 @@ export function analyzeCohort(
   );
   const features = normalized.locations.map((location, index) => {
     const neighbors = resolveNeighbors(location, normalized.locations);
+    const localComparison = sameHourNeighborDeviations(location, neighbors);
     return withLocalDeviation(
       bases[index],
-      sameHourNeighborDeviations(location, neighbors),
-      neighbors.length,
+      localComparison.deviations,
+      localComparison.neighborCount,
     );
   });
   const scores = scoreThermalFeatures(features);

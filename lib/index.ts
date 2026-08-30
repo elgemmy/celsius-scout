@@ -22,6 +22,7 @@ export {
   findSimilarAverageDifferentBehaviorPair,
   findUnderratedCoolLocation,
   inspectLocation,
+  unavailableScoutResult,
 } from "./scouting";
 export { elapsedHours, normalizeThermalCohort, toEpochMs } from "./thermal-model";
 export type * from "./types";

@@ -109,3 +109,21 @@ the active cohort threshold, name, provenance, and Comfort availability.
 or safety scores. Keeping definitions, formulas, unavailable-state behavior, and
 claim boundaries beside the interaction makes the scouting metaphor legible
 without separating users from the board.
+
+## 2026-08-29 — Fail closed at real-data boundaries
+
+- Parse FortyGuard's documented `{ data: ... }` response envelope for both
+  submission and status calls, and reject a returned activity ID that does not
+  match the requested activity.
+- Support the documented 2019+ date range and filter type 4 instead of coding
+  only against simplified test responses.
+- Require all locations in a scored cohort to share an observation window.
+- Make local deviation unavailable when any timestamp lacks two matching
+  neighbors; do not turn partial spatial coverage into a complete Surprise
+  score.
+ - Let the scout agent normalize and analyze a supplied raw cohort; the
+   synthetic fixture is a fallback input, not a hidden calculation singleton.
+
+**Why:** Live provider responses and incomplete spatial series must fail visibly
+or remain unavailable. Silent fallback to demo-shaped assumptions would make a
+ working interface look more reliable than its evidence.

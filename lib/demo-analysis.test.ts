@@ -98,4 +98,34 @@ describe("deterministic demo cohort", () => {
     expect(twoLocations.locations[0].features.localDeviationC).toBeNull();
     expect(twoLocations.locations[0].scores.surprise).toBeNull();
   });
+
+  it("does not score Surprise from partial timestamp coverage", () => {
+    const locationWithThreeSamples = (id: string, temperatures: [number, number, number], neighborIds: string[]): ThermalLocation => ({
+      id,
+      name: id,
+      areaLabel: "Test",
+      latitude: id.charCodeAt(0) - 97,
+      longitude: 0,
+      neighborIds,
+      samples: temperatures.map((temperatureC, index) => ({
+        timestamp: `2026-08-18T1${index}:00:00Z`,
+        temperatureC,
+      })),
+    });
+    const sparseNeighbor = tinyLocation("c", [12, 16], ["a", "b"]);
+    sparseNeighbor.samples[1] = {
+      ...sparseNeighbor.samples[1],
+      timestamp: "2026-08-18T12:00:00Z",
+    };
+    const analysis = analyzeCohort(tinyCohort([
+      locationWithThreeSamples("a", [10, 15, 20], ["b", "c"]),
+      locationWithThreeSamples("b", [8, 13, 18], ["a", "c"]),
+      sparseNeighbor,
+    ]));
+    const target = analysis.locations.find((location) => location.id === "a");
+
+    expect(target?.features.neighborCount).toBe(1);
+    expect(target?.features.localDeviationC).toBeNull();
+    expect(target?.scores.surprise).toBeNull();
+  });
 });

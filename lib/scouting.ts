@@ -333,3 +333,20 @@ export function inspectLocation(
     "Returns the normalized input series, all raw features, cohort scores, archetype rule evidence, and cohort methodology in one payload.",
   );
 }
+
+/** A structured, number-free result for questions the active evidence cannot answer. */
+export function unavailableScoutResult(
+  analysis: CelsiusScoutAnalysis,
+  question: string,
+  reason: string,
+): ScoutToolResult<null> {
+  return result(
+    analysis,
+    "metric_unavailable",
+    question,
+    `The requested analysis is unavailable for this cohort: ${reason}.`,
+    null,
+    [],
+    "No substitute metric or demo value was used. Collect the missing observations before making this comparison.",
+  );
+}

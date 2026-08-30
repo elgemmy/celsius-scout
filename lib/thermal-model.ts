@@ -44,6 +44,7 @@ function normalizeSample(sample: ThermalSample, locationId: string): ThermalSamp
 function normalizeLocation(location: ThermalLocation): ThermalLocation {
   if (!location.id.trim()) throw new Error("Location id is required");
   if (!location.name.trim()) throw new Error(`${location.id} name is required`);
+  if (!location.areaLabel.trim()) throw new Error(`${location.id} area label is required`);
   assertFinite(location.latitude, `${location.id} latitude`);
   assertFinite(location.longitude, `${location.id} longitude`);
   if (location.latitude < -90 || location.latitude > 90) {
@@ -82,7 +83,20 @@ function normalizeLocation(location: ThermalLocation): ThermalLocation {
 export function normalizeThermalCohort(cohort: ThermalCohort): ThermalCohort {
   if (!cohort.id.trim()) throw new Error("Cohort id is required");
   if (!cohort.name.trim()) throw new Error("Cohort name is required");
+  if (!cohort.timezone.trim()) throw new Error("Cohort timezone is required");
+  try {
+    new Intl.DateTimeFormat("en", { timeZone: cohort.timezone }).format(0);
+  } catch {
+    throw new Error(`Invalid IANA timezone: ${cohort.timezone}`);
+  }
+  if (!cohort.source.label.trim()) throw new Error("Cohort source label is required");
   assertFinite(cohort.thresholdC, "Cohort threshold");
+  if (
+    cohort.thresholdC < MIN_REASONABLE_TEMPERATURE_C ||
+    cohort.thresholdC > MAX_REASONABLE_TEMPERATURE_C
+  ) {
+    throw new Error("Cohort threshold is outside the supported temperature range");
+  }
   if (cohort.locations.length < 2) throw new Error("A comparison cohort requires at least two locations");
 
   const ids = new Set<string>();
@@ -96,6 +110,21 @@ export function normalizeThermalCohort(cohort: ThermalCohort): ThermalCohort {
     for (const neighborId of location.neighborIds ?? []) {
       if (neighborId === location.id) throw new Error(`${location.id} cannot be its own neighbor`);
       if (!ids.has(neighborId)) throw new Error(`${location.id} references unknown neighbor ${neighborId}`);
+    }
+  }
+
+  // Percentiles and peak offsets are only meaningful when every location is
+  // evaluated over the same observation window. Internal sampling intervals
+  // may still differ because all time-based metrics are interval-aware.
+  const referenceStart = timestampMs(locations[0].samples[0].timestamp);
+  const referenceEnd = timestampMs(locations[0].samples.at(-1)!.timestamp);
+  for (const location of locations.slice(1)) {
+    const locationStart = timestampMs(location.samples[0].timestamp);
+    const locationEnd = timestampMs(location.samples.at(-1)!.timestamp);
+    if (locationStart !== referenceStart || locationEnd !== referenceEnd) {
+      throw new Error(
+        `${location.id} observation window must match ${locations[0].id} for cohort scoring`,
+      );
     }
   }
 

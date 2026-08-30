@@ -8,6 +8,7 @@ import {
   findSimilarAverageDifferentBehaviorPair,
   findUnderratedCoolLocation,
   inspectLocation,
+  unavailableScoutResult,
   type CelsiusScoutAnalysis,
   type ScoutToolResult,
   type ThermalCohort,
@@ -37,6 +38,7 @@ export interface ScoutAgentResult {
 
 export interface ScoutAgentOptions {
   question: string;
+  /** Raw cohort input is normalized and analyzed at this trust boundary. */
   cohort?: ThermalCohort;
   apiKey?: string;
   model?: string;
@@ -192,7 +194,9 @@ function deterministicExplanation(entry: ScoutTraceEntry): string {
   const evidence = entry.result.evidence.slice(0, 3).map((item) =>
     `${item.label}: ${item.value}${item.unit ? ` ${item.unit}` : ""}`,
   );
-  return `${entry.result.answer} ${evidence.join("; ")}.`;
+  return evidence.length
+    ? `${entry.result.answer} ${evidence.join("; ")}.`
+    : entry.result.answer;
 }
 
 function deterministicResult(
@@ -200,15 +204,28 @@ function deterministicResult(
   question: string,
   reason?: string,
 ): ScoutAgentResult {
-  const entry = deterministicTool(analysis, question);
-  const explanation = deterministicExplanation(entry);
+  let entry: ScoutTraceEntry;
+  let unavailableReason: string | undefined;
+  try {
+    entry = deterministicTool(analysis, question);
+  } catch (error) {
+    unavailableReason = error instanceof Error ? error.message : "The requested metric is unavailable";
+    entry = {
+      tool: "metric_unavailable",
+      arguments: {},
+      result: unavailableScoutResult(analysis, question, unavailableReason),
+    };
+  }
+  const evidenceExplanation = deterministicExplanation(entry);
+  const explanation = evidenceExplanation;
+  const fallbackReason = [reason, unavailableReason].filter(Boolean).join("; ") || undefined;
   return {
     mode: "deterministic",
     question,
     explanation,
     trace: [entry],
     grounding: validateNumericGrounding(explanation, entry),
-    ...(reason ? { fallbackReason: reason } : {}),
+    ...(fallbackReason ? { fallbackReason } : {}),
   };
 }
 

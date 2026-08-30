@@ -127,4 +127,29 @@ describe("provider-neutral cohort normalization", () => {
     };
     expect(() => normalizeThermalCohort(cohort(duplicate))).toThrow("duplicate timestamps");
   });
+
+  it("rejects invalid cohort metadata before scores can be produced", () => {
+    expect(() => normalizeThermalCohort({ ...cohort(irregularLocation), timezone: "Mars/Olympus" }))
+      .toThrow("Invalid IANA timezone");
+    expect(() => normalizeThermalCohort({ ...cohort(irregularLocation), thresholdC: 120 }))
+      .toThrow("threshold is outside");
+    expect(() => normalizeThermalCohort({
+      ...cohort(irregularLocation),
+      source: { label: "", kind: "other" },
+    })).toThrow("source label");
+  });
+
+  it("requires a common observation window for fair cohort percentiles", () => {
+    const input = cohort(irregularLocation);
+    input.locations[1] = {
+      ...input.locations[1],
+      samples: input.locations[1].samples.map((sample, index) =>
+        index === input.locations[1].samples.length - 1
+          ? { ...sample, timestamp: "2026-08-18T13:00:00Z" }
+          : sample,
+      ),
+    };
+
+    expect(() => normalizeThermalCohort(input)).toThrow("observation window must match");
+  });
 });

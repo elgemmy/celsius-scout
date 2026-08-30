@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { demoCohort } from "../lib";
 import { runScoutAgent } from "./scout-agent";
 
 describe("Celsius Scout agent", () => {
@@ -29,6 +30,52 @@ describe("Celsius Scout agent", () => {
 
     expect(result.mode).toBe("deterministic");
     expect(result.trace[0].tool).toBe("find_fastest_recovery");
+    expect(result.grounding.grounded).toBe(true);
+  });
+
+  it("runs tools against the supplied cohort rather than a hidden demo singleton", async () => {
+    const customCohort = {
+      ...demoCohort,
+      id: "custom-cohort",
+      name: "Custom real-data candidate",
+      source: { label: "Imported candidate snapshot", kind: "fortyguard" as const },
+    };
+
+    const result = await runScoutAgent({
+      question: "Find the biggest thermal fraud.",
+      cohort: customCohort,
+      apiKey: "",
+      model: "",
+    });
+
+    expect(result.trace[0].result.context).toMatchObject({
+      cohortId: "custom-cohort",
+      cohortName: "Custom real-data candidate",
+      sourceLabel: "Imported candidate snapshot",
+      isSynthetic: false,
+    });
+  });
+
+  it("fails visibly to a grounded inspection when a requested metric is unavailable", async () => {
+    const shortCohort = {
+      ...demoCohort,
+      id: "short-window",
+      locations: demoCohort.locations.map((location) => ({
+        ...location,
+        samples: [location.samples[0], location.samples.at(-1)!],
+      })),
+    };
+
+    const result = await runScoutAgent({
+      question: "Which location cools down fastest?",
+      cohort: shortCohort,
+      apiKey: "",
+      model: "",
+    });
+
+    expect(result.trace[0].tool).toBe("metric_unavailable");
+    expect(result.explanation).toContain("unavailable for this cohort");
+    expect(result.fallbackReason).toContain("No location has enough post-peak observations");
     expect(result.grounding.grounded).toBe(true);
   });
 

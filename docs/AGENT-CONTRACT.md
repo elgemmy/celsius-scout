@@ -4,7 +4,10 @@ The scout is an analytical planner and explainer around a deterministic engine. 
 
 ## Two runtime modes
 
-**Deterministic scout** routes the four supported demo missions to known tools and renders templated explanations. This mode is always available.
+**Deterministic scout** routes the supported missions to known tools over the
+active validated analysis and renders templated explanations. The bundled demo
+is the default analysis, not a hidden data dependency. This mode is always
+available.
 
 **LLM scout** uses the OpenAI Responses API function-calling loop when server-only credentials and a model are configured. It may select tools adaptively and synthesize their structured output.
 
@@ -34,6 +37,9 @@ The UI must label the active mode. Falling back is a normal state, not a hidden 
 - `store: false` for the hackathon demo.
 - Return the selected tool names, arguments, results, mode, and final explanation to the UI.
 - On invalid arguments, unknown tools, timeout, or provider failure, stop and use the deterministic scout.
+- If the active cohort lacks the observations required by a requested metric,
+  return a structured `metric_unavailable` result. Do not substitute a different
+  ranking or a value from the demo cohort.
 
 ## Prompt invariant
 

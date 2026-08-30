@@ -14,8 +14,9 @@ with an explicit UTC offset and a temperature. Samples may also contain:
 
 Provider adapters map external responses into this model before analysis. Core
 calculations do not depend on FortyGuard response shapes or geographic coverage.
-The normalizer validates ranges, sorts samples, rejects duplicate instants, and
-does not mutate its input.
+The normalizer validates ranges and IANA timezone metadata, sorts samples,
+rejects duplicate instants, requires a shared observation window for fair
+cohort scores, and does not mutate its input.
 
 The bundled Phoenix cohort is synthetic and deliberately shaped for the demo.
 It is not observed FortyGuard data. It has ten fictional locations and eleven
@@ -105,7 +106,8 @@ differences across the window:
 - negative: locally cooler than neighbors
 - zero: aligned with neighbors
 
-At least two matching neighbors are required. Otherwise the feature and
+At least two matching neighbors at every location timestamp are required.
+Partial timestamp coverage is not silently scored: otherwise the feature and
 Surprise score are `null`. Explicit `neighborIds` are preferred. If absent, the
 engine deterministically chooses the three nearest cohort locations by local
 coordinate distance, breaking ties by location id.
