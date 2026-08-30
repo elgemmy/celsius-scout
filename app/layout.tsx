@@ -1,5 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./styles/shell.css";
+import "./styles/missions.css";
+import "./styles/map.css";
+import "./styles/card.css";
+import "./styles/evidence.css";
+import "./styles/average.css";
 
 export const metadata: Metadata = {
   title: "Celsius Scout — Thermal intelligence, scouted",
