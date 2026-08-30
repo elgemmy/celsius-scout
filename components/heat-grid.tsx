@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type PointerEvent } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from "react";
 
 export interface MapLocation {
   id: string;
@@ -15,6 +15,7 @@ export interface MapLocation {
   height: number;
   clipPath?: string;
   tone: "cool" | "mild" | "warm" | "hot" | "extreme";
+  accent?: string;
 }
 
 interface HeatGridProps {
@@ -229,7 +230,8 @@ export function HeatGrid({ locations, selectedIds, inspectedId, onSelect }: Heat
                       top: `${location.y}%`,
                       width: `${location.width}%`,
                       height: `${location.height}%`,
-                    }}
+                      "--plot-accent": location.accent ?? "#8a8176",
+                    } as CSSProperties}
                     onClick={() => {
                       onSelect(location.id);
                       const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;

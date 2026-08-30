@@ -193,7 +193,7 @@ function toViewLocation(
     label: location.tags?.[0]?.replaceAll("-", " ") ?? location.areaLabel,
     archetype: location.archetype.name,
     number: String(index + 1).padStart(2, "0"),
-    accent: ARCHETYPE_ACCENTS[location.archetype.id],
+    accent: persona?.suit ?? ARCHETYPE_ACCENTS[location.archetype.id],
     heatPressure: scores.heatPressure,
     temperatureC: features.peakTemperatureC,
     exceedance: duration(features.totalExceedanceHours),
@@ -417,10 +417,6 @@ function ScoutCard({ location, thresholdC }: { location: ScoutLocation; threshol
         })}
       </div>
       <p className="card-pitch">{location.pitch}</p>
-      <footer className="card-footer">
-        <span>Ratings = in-cohort percentiles</span>
-        <strong>{isSnapshot ? "FortyGuard snapshot" : "Synthetic demo"}</strong>
-      </footer>
     </article>
   );
 }

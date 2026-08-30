@@ -305,11 +305,8 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, summary:focus-vis
 .map-underlay { pointer-events: none; }
 .map-heat-veil {
   pointer-events: none;
-  background:
-    radial-gradient(circle at 30% 20%, rgba(210, 78, 40, .16), transparent 36%),
-    radial-gradient(circle at 78% 70%, rgba(27, 125, 121, .14), transparent 32%);
-  mix-blend-mode: overlay;
-  animation: heat-shift 10s ease-in-out infinite alternate;
+  background: radial-gradient(circle at 50% 40%, rgba(28, 25, 20, .08), transparent 55%);
+  animation: none;
 }
 .map-grid-line { fill: none; stroke: rgba(247, 241, 230, .14); stroke-width: 1; }
 .map-plots { position: absolute; inset: 0; }
@@ -325,19 +322,14 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, summary:focus-vis
 
 .plot-glow {
   position: absolute;
-  inset: -18%;
-  border-radius: 18px;
-  opacity: .55;
-  filter: blur(10px);
+  inset: -8%;
+  border-radius: 12px;
+  opacity: .18;
+  filter: blur(8px);
   pointer-events: none;
-  animation: heat-pulse 2.8s ease-in-out infinite;
+  background: var(--plot-accent, #8a8176);
+  animation: none;
 }
-
-.map-plot--cool .plot-glow { background: #2ec8c0; }
-.map-plot--mild .plot-glow { background: #7ad07a; }
-.map-plot--warm .plot-glow { background: #f0b04a; }
-.map-plot--hot .plot-glow { background: #ff7a45; }
-.map-plot--extreme .plot-glow { background: #ff5a3a; }
 
 .plot-face {
   position: relative;
@@ -349,29 +341,23 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, summary:focus-vis
   border-radius: 8px;
   color: #fff8ee;
   overflow: hidden;
-  box-shadow: inset 0 -24px 28px rgba(0,0,0,.18);
-  opacity: .82;
-  transition: opacity .2s ease, transform .2s ease, filter .2s ease;
+  background: radial-gradient(circle at 40% 28%, color-mix(in srgb, var(--plot-accent, #8a8176) 72%, white), var(--plot-accent, #8a8176) 78%);
+  box-shadow: inset 0 -18px 22px rgba(0,0,0,.16);
+  opacity: .88;
+  transition: opacity .2s ease, transform .2s ease;
 }
 
-.map-plot--cool .plot-face { background: radial-gradient(circle at 40% 30%, #3dcdc4, #1a6f6b 72%); }
-.map-plot--mild .plot-face { background: radial-gradient(circle at 40% 30%, #7ed48a, #3f7a4c 72%); }
-.map-plot--warm .plot-face { background: radial-gradient(circle at 40% 30%, #f3c56a, #c07a28 72%); }
-.map-plot--hot .plot-face { background: radial-gradient(circle at 40% 30%, #ff9a62, #d24e28 72%); }
-.map-plot--extreme .plot-face { background: radial-gradient(circle at 40% 30%, #ff7d5c, #a81f1f 72%); }
-
 .map-plot:hover { z-index: 5; }
-.map-plot:hover .plot-face { opacity: 1; transform: translateY(-2px) scale(1.03); filter: saturate(1.15); }
-.map-plot:hover .plot-glow { opacity: .9; }
+.map-plot:hover .plot-face { opacity: 1; transform: translateY(-1px); }
+.map-plot:hover .plot-glow { opacity: .28; }
 
 .map-plot.is-selected { z-index: 6; }
 .map-plot.is-selected .plot-face {
   opacity: 1;
-  outline: 2px solid #f3e0a8;
+  outline: 2px solid color-mix(in srgb, var(--plot-accent, #e1c36a) 40%, white);
   outline-offset: 3px;
-  box-shadow: 0 0 0 6px rgba(243, 224, 168, .22), inset 0 0 18px rgba(255, 220, 140, .2);
 }
-.map-plot.is-selected .plot-glow { opacity: 1; animation-duration: 1.6s; }
+.map-plot.is-selected .plot-glow { opacity: .32; }
 
 .map-plot.is-inspected .plot-face::after {
   content: "";
@@ -382,7 +368,6 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, summary:focus-vis
   height: 9px;
   border-radius: 50%;
   background: #fff6d8;
-  box-shadow: 0 0 10px #ffe08a;
 }
 
 .plot-id {
