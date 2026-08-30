@@ -1,1 +1,197 @@
 /* Map / HeatGrid overrides: roster tiles, selection, underlay. */
+
+.map-road,
+.map-water,
+.map-contours {
+  opacity: .3;
+}
+
+.map-road {
+  stroke-width: 14;
+}
+
+.map-road-wide {
+  stroke-width: 22;
+}
+
+.map-water {
+  stroke-width: 30;
+}
+
+.map-contours {
+  stroke-width: 1;
+}
+
+.map-plot,
+.map-plot:nth-child(3n),
+.map-plot:hover,
+.map-plot.is-selected {
+  transform: none;
+}
+
+.map-plot {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  align-content: stretch;
+  gap: 2px;
+  padding: 6px 7px 5px;
+  overflow: visible;
+  border-width: 1px;
+  border-radius: 4px;
+  background: transparent;
+  box-shadow: none;
+  filter: none;
+  transition: filter .18s ease, box-shadow .18s ease;
+}
+
+.map-plot::after {
+  content: none;
+}
+
+.map-plot--cool,
+.map-plot--mild,
+.map-plot--warm,
+.map-plot--hot,
+.map-plot--extreme {
+  background: transparent;
+}
+
+.plot-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 4px;
+  pointer-events: none;
+  box-shadow: inset 0 -30px 35px rgba(0, 0, 0, .14);
+}
+
+.map-plot--cool .plot-face { background: #187b78; }
+.map-plot--mild .plot-face { background: #5a9c69; }
+.map-plot--warm .plot-face { background: #bf8c3d; }
+.map-plot--hot .plot-face { background: #da633d; }
+.map-plot--extreme .plot-face { background: #b9322f; }
+
+.map-plot:not(.is-selected) .plot-face {
+  opacity: .8;
+  filter: saturate(.72);
+}
+
+.map-plot:not(.is-selected) {
+  filter: saturate(.86);
+}
+
+.map-plot:hover {
+  z-index: 3;
+  filter: none;
+}
+
+.map-plot:hover .plot-face {
+  filter: brightness(1.1);
+}
+
+.map-plot.is-selected {
+  z-index: 5;
+  overflow: visible;
+  border-width: 1px;
+  border-color: rgba(255, 255, 255, .2);
+  outline: 2px solid var(--lime);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px rgba(217, 255, 90, .16), 0 10px 22px rgba(0, 0, 0, .35);
+  filter: none;
+}
+
+.map-plot.is-selected .plot-face {
+  opacity: 1;
+  filter: none;
+}
+
+.map-plot.is-selected:focus-visible {
+  outline: 3px solid var(--lime);
+  outline-offset: 3px;
+}
+
+.plot-id,
+.plot-rating,
+.plot-peak,
+.plot-nameplate {
+  position: relative;
+  z-index: 1;
+}
+
+.plot-id {
+  font: 700 clamp(.5rem, .7vw, .62rem) / 1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .08em;
+  opacity: .9;
+}
+
+.plot-rating {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+  align-self: end;
+}
+
+.map-plot strong {
+  font-size: clamp(.78rem, 1.15vw, 1.05rem);
+  font-weight: 800;
+  letter-spacing: -.05em;
+  line-height: .9;
+}
+
+.plot-hp-unit {
+  color: rgba(255, 255, 255, .82);
+  font: 700 .52rem / 1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .08em;
+}
+
+.plot-peak {
+  justify-self: start;
+  color: rgba(255, 255, 255, .78);
+  font: 700 clamp(.5rem, .65vw, .62rem) / 1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .02em;
+}
+
+.plot-nameplate {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  min-width: 0;
+  max-width: calc(100% + 4px);
+  margin: -7px -8px 2px;
+  padding: 3px 5px;
+  border-radius: 4px 4px 0 0;
+  color: var(--ink-dark);
+  background: var(--lime);
+  pointer-events: none;
+  font: 700 .55rem / 1.15 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .02em;
+}
+
+.plot-nameplate b {
+  flex: none;
+  font-weight: 800;
+  letter-spacing: .06em;
+}
+
+.plot-nameplate span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+  .plot-id {
+    font-size: .5rem;
+  }
+
+  .map-plot strong {
+    font-size: .72rem;
+  }
+
+  .plot-nameplate {
+    margin: -6px -7px 1px;
+    padding: 2px 4px;
+    font-size: .5rem;
+  }
+}

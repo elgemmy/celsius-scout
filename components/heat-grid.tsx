@@ -3,6 +3,7 @@ export interface MapLocation {
   code?: string;
   name: string;
   temperatureC: number;
+  heatPressure?: number;
   x: number;
   y: number;
   width: number;
@@ -24,6 +25,19 @@ const TONE_LABELS: Record<MapLocation["tone"], string> = {
   hot: "hot",
   extreme: "hottest",
 };
+
+function rosterName(name: string, max = 14): string {
+  const compact = name.replace(/^Phoenix 100m\s+/i, "").trim();
+  if (compact.length <= max) return compact;
+  return `${compact.slice(0, max - 1).trimEnd()}…`;
+}
+
+function plotAriaLabel(location: MapLocation, temperaturePrecision: number): string {
+  const peak = `${location.temperatureC.toFixed(temperaturePrecision)} degrees Celsius peak`;
+  const band = `${TONE_LABELS[location.tone]} relative peak-rank band`;
+  const heatPressure = location.heatPressure == null ? "" : `, Heat Pressure ${location.heatPressure}`;
+  return `${location.name}, ${peak}, ${band}${heatPressure}`;
+}
 
 export function HeatGrid({ locations, selectedIds, onSelect }: HeatGridProps) {
   const peakRange = Math.max(...locations.map((location) => location.temperatureC)) -
@@ -63,6 +77,8 @@ export function HeatGrid({ locations, selectedIds, onSelect }: HeatGridProps) {
       <div className="map-plots">
         {locations.map((location) => {
           const selected = selectedIds.includes(location.id);
+          const code = location.code ?? location.id;
+          const peakLabel = `${location.temperatureC.toFixed(temperaturePrecision)}°`;
           return (
             <button
               key={location.id}
@@ -73,14 +89,35 @@ export function HeatGrid({ locations, selectedIds, onSelect }: HeatGridProps) {
                 top: `${location.y}%`,
                 width: `${location.width}%`,
                 height: `${location.height}%`,
-                clipPath: location.clipPath,
               }}
               onClick={() => onSelect(location.id)}
               aria-pressed={selected}
-              aria-label={`${location.name}, ${location.temperatureC.toFixed(temperaturePrecision)} degrees Celsius peak, ${TONE_LABELS[location.tone]} relative peak-rank band`}
+              aria-label={plotAriaLabel(location, temperaturePrecision)}
             >
-              <span className="plot-id">{location.code ?? location.id}</span>
-              <strong>{location.temperatureC.toFixed(temperaturePrecision)}°</strong>
+              <span
+                className="plot-face"
+                style={location.clipPath ? { clipPath: location.clipPath } : undefined}
+                aria-hidden="true"
+              />
+              {selected ? (
+                <span className="plot-nameplate">
+                  <b>{code}</b>
+                  <span>{rosterName(location.name)}</span>
+                </span>
+              ) : (
+                <span className="plot-id">{code}</span>
+              )}
+              <span className="plot-rating">
+                {location.heatPressure == null ? (
+                  <strong>{peakLabel}</strong>
+                ) : (
+                  <>
+                    <strong>{location.heatPressure}</strong>
+                    <span className="plot-hp-unit">HP</span>
+                  </>
+                )}
+              </span>
+              {location.heatPressure != null ? <span className="plot-peak">{peakLabel}</span> : null}
             </button>
           );
         })}
