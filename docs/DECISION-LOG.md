@@ -140,3 +140,15 @@ URL. Empty values fall back to OpenAI.
 **Why:** The existing tool-call, numeric-grounding, and fallback contract is
 Responses-shaped. Judges can plug any compatible key, model, and URL without a
 client rewrite. Chat Completions-only hosts are out of scope.
+
+## 2026-08-30 — Extract scouting UI into presentational files
+
+**Decision:** Split `components/celsius-scout.tsx` into a client orchestrator plus
+named presentational modules (`scout-view`, header, intro, cohort bar, mission
+rail, map panel, card, evidence, average, ratings, method). Reorder
+`missionsFor()` to Thermal fraud → Different twins → Coolest five → Fastest
+recovery so brief 01 matches the default `thermal-fraud` state. Do not restyle,
+rename tools, or change formulas.
+
+**Why:** Visual agents can restyle independent surfaces in parallel without
+editing the monolith or the selection/state machine.
