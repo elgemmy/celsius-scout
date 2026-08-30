@@ -56,13 +56,12 @@ and only submits missing layers for the pinned snapshot.
 
 ## What to read next
 
-- [`docs/START-HERE.md`](docs/START-HERE.md) — tomorrow-morning onboarding
 - [`docs/DEMO-SCRIPT.md`](docs/DEMO-SCRIPT.md) — three-minute demo route
 - [`docs/METRICS.md`](docs/METRICS.md) — exact analytical contract
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — runtime boundaries
-- [`docs/FINAL-REPORT.md`](docs/FINAL-REPORT.md) — decisions, status, and next moves
-- [`docs/PREREQUISITES.md`](docs/PREREQUISITES.md) — topics worth knowing
+- [`docs/API-NOTES.md`](docs/API-NOTES.md) — FortyGuard request and snapshot notes
 - [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md) — claims and technical limits
+- [`docs/FINAL-REPORT.md`](docs/FINAL-REPORT.md) — decisions, status, and next moves
 
 ## Branches
 
